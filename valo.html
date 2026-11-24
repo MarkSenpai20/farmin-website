@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valorant Tournament Manager — Automated System</title>
+    <style>
+        /* Minimalist Brutalist Black & White Theme */
+        :root {
+            --bg: #ffffff;
+            --fg: #000000;
+            --muted: #f5f5f5;
+            --border: #000000;
+            --subtle-border: #cccccc;
+            --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--fg);
+            font-family: var(--font-sans);
+            font-size: 13px;
+            line-height: 1.4;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header & Controls */
+        header {
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        h1 {
+            font-family: var(--font-mono);
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: -0.5px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: #444;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: var(--bg);
+            color: var(--fg);
+            border: 1px solid var(--border);
+            padding: 8px 14px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.1s, color 0.1s;
+        }
+
+        button:hover {
+            background: var(--fg);
+            color: var(--bg);
+        }
+
+        button.primary {
+            background: var(--fg);
+            color: var(--bg);
+        }
+
+        button.primary:hover {
+            background: #333333;
+        }
+
+        /* Layout Sections */
+        section {
+            border: 1px solid var(--border);
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .section-header {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Team Inputs */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        .input-box {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .input-box label {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--fg);
+            font-family: var(--font-mono);
+            font-size: 12px;
+            padding: 6px 8px;
+        }
+
+        input:focus, select:focus {
+            outline: 2px solid var(--fg);
+            outline-offset: -2px;
+        }
+
+        /* Tables */
+        .table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: var(--font-mono);
+            font-size: 12px;
+        }
+
+        th, td {
+            border: 1px solid var(--border);
+            padding: 6px 8px;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        th {
+            background: var(--muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+        }
+
+        td input[type="number"], td input[type="text"], td select {
+            border: none;
+            padding: 4px;
+            background: transparent;
+        }
+
+        td input[type="number"] {
+            text-align: right;
+            min-width: 54px;
+        }
+
+        td input[type="text"] {
+            min-width: 85px;
+        }
+
+        td select {
+            min-width: 115px;
+        }
+
+        .num { text-align: right; }
+        .center { text-align: center; }
+        .bold { font-weight: 700; }
+
+        /* Series Cards */
+        .series-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 20px;
+            min-width: 0;
+        }
+
+        .series-card {
+            border: 1px solid var(--border);
+            padding: 12px;
+            min-width: 0;
+            max-width: 100%;
+            overflow: hidden;
+        }
+
+        .series-top {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--subtle-border);
+            font-family: var(--font-mono);
+        }
+
+        .score-pill {
+            border: 1px solid var(--border);
+            padding: 2px 8px;
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        .score-pill.done {
+            background: var(--fg);
+            color: var(--bg);
+        }
+
+        .game-disabled {
+            opacity: 0.35;
+            pointer-events: none;
+            background: var(--muted);
+        }
+
+        .note {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: #444;
+            margin-top: 8px;
+        }
+
+        /* Mobile Input Sizing & Responsive Layout */
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+
+            header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+
+            .toolbar {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                width: 100%;
+            }
+
+            .toolbar button.primary {
+                grid-column: span 2;
+            }
+
+            button {
+                padding: 12px 14px;
+                font-size: 12px;
+            }
+
+            section {
+                padding: 12px;
+                margin-bottom: 16px;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+
+            .team-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            input[type="text"], input[type="number"], select {
+                font-size: 16px;
+                padding: 8px;
+            }
+
+            td input[type="number"], td input[type="text"], td select {
+                font-size: 14px;
+                padding: 8px 6px;
+            }
+
+            th, td {
+                padding: 8px 6px;
+            }
+
+            .series-card {
+                padding: 10px;
+            }
+
+            .series-top {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .score-pill {
+                align-self: flex-start;
+            }
+        }
+
+        /* Custom Modal Notification */
+        #modalOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 16px;
+        }
+
+        #modalBox {
+            background: var(--bg);
+            border: 2px solid var(--border);
+            padding: 20px;
+            max-width: 400px;
+            width: 100%;
+            font-family: var(--font-mono);
+        }
+
+        #modalTitle {
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 6px;
+        }
+
+        #modalBody {
+            font-size: 12px;
+            margin-bottom: 16px;
+        }
+
+        #modalActions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div>
+            <h1>Valorant Tournament System</h1>
+            <div class="subtitle">Automated 4-Team Round Robin (Bo3) &amp; Grand Finals (Bo3)</div>
+        </div>
+        <div class="toolbar">
+            <button onclick="loadDemoData()">Load Demo Data</button>
+            <button onclick="promptReset()">Reset All</button>
+            <button class="primary" onclick="exportCSV()">Export CSV</button>
+        </div>
+    </header>
+
+    <!-- 01. TEAM REGISTRATION -->
+    <section>
+        <div class="section-header">
+            <span>01. Participating Teams (4 Teams)</span>
+            <span class="subtitle">Auto-syncs across all 6 Round Robin series &amp; Finals</span>
+        </div>
+        <div class="team-grid">
+            <div class="input-box">
+                <label for="nameA">Team 1</label>
+                <input type="text" id="nameA" value="Team Alpha" oninput="recalculate()">
+            </div>
+            <div class="input-box">
+                <label for="nameB">Team 2</label>
+                <input type="text" id="nameB" value="Team Bravo" oninput="recalculate()">
+            </div>
+            <div class="input-box">
+                <label for="nameC">Team 3</label>
+                <input type="text" id="nameC" value="Team Charlie" oninput="recalculate()">
+            </div>
+            <div class="input-box">
+                <label for="nameD">Team 4</label>
+                <input type="text" id="nameD" value="Team Delta" oninput="recalculate()">
+            </div>
+        </div>
+    </section>
+
+    <!-- 02. AUTOMATED STANDINGS -->
+    <section>
+        <div class="section-header">
+            <span>02. Live Group Standings</span>
+            <span class="subtitle">Top 2 Seeds Advance to Bo3 Grand Finals</span>
+        </div>
+        <div class="table-wrap">
+            <table id="standingsTable">
+                <thead>
+                    <tr>
+                        <th class="center">Seed</th>
+                        <th>Team Name</th>
+                        <th class="center">Series W-L</th>
+                        <th class="center">Maps W-L</th>
+                        <th class="center">Net Maps</th>
+                        <th class="center">Rounds W-L</th>
+                        <th class="center">Round Diff</th>
+                        <th class="center">Points</th>
+                        <th class="num">Kills</th>
+                        <th class="num">Deaths</th>
+                        <th class="num">Assists</th>
+                        <th class="center">K/D</th>
+                        <th class="center">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="standingsBody"></tbody>
+            </table>
+        </div>
+        <div class="note">
+            Points: 2-0 Win = 3 pts | 2-1 Win = 2 pts | 1-2 Loss = 1 pt | 0-2 Loss = 0 pts. 
+            Tiebreakers: 1. Match Points &rarr; 2. Net Map Wins &rarr; 3. Round Differential (Rounds Won - Rounds Lost) &rarr; 4. Head-to-Head (2-way) &rarr; 5. Total Kills.
+        </div>
+    </section>
+
+    <!-- 03. ROUND ROBIN GAME-BY-GAME ENTRY -->
+    <section>
+        <div class="section-header">
+            <span>03. Round Robin Match Logs (6 Series &times; Best of 3)</span>
+            <span class="subtitle">Enter map scores &amp; K/D/A; map winners &amp; series scores auto-compute</span>
+        </div>
+        <div class="series-grid" id="rrContainer"></div>
+    </section>
+
+    <!-- 04. GRAND FINALS (BEST OF 3) -->
+    <section>
+        <div class="section-header">
+            <span>04. Grand Finals (Best of 3)</span>
+            <span id="finalsChampionBadge" class="score-pill">Awaiting Group Stage</span>
+        </div>
+        <div id="finalsContainer"></div>
+    </section>
+
+    <!-- Custom Modal -->
+    <div id="modalOverlay">
+        <div id="modalBox">
+            <div id="modalTitle">Notice</div>
+            <div id="modalBody"></div>
+            <div id="modalActions"></div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * Valorant 4-Team Tournament State & Automation Engine
+         * Tracks Map Picks, Rounds Won/Lost, Kills, Deaths, and Assists per map.
+         * Dual-layer persistence (localStorage + window.name fallback) prevents data loss on accidental refresh.
+         */
+        const STORAGE_KEY = 'valorant_auto_tournament_4t_v1';
+
+        const VALORANT_MAPS = [
+            '', 'Abyss', 'Ascent', 'Bind', 'Breeze', 'Fracture', 'Haven', 'Icebox', 'Lotus', 'Pearl', 'Split', 'Sunset'
+        ];
+
+        const defaultState = () => ({
+            teams: {
+                A: 'Team Alpha',
+                B: 'Team Bravo',
+                C: 'Team Charlie',
+                D: 'Team Delta'
+            },
+            rr: [
+                // 4-Team Single Round Robin (6 Series across 3 Rounds)
+                createEmptySeries('rr1', 'A', 'B', 3, 'Round 1 — Match 1'),
+                createEmptySeries('rr2', 'C', 'D', 3, 'Round 1 — Match 2'),
+                createEmptySeries('rr3', 'A', 'C', 3, 'Round 2 — Match 3'),
+                createEmptySeries('rr4', 'B', 'D', 3, 'Round 2 — Match 4'),
+                createEmptySeries('rr5', 'A', 'D', 3, 'Round 3 — Match 5'),
+                createEmptySeries('rr6', 'B', 'C', 3, 'Round 3 — Match 6')
+            ],
+            finals: createEmptySeries('finals', 'SEED1', 'SEED2', 3, 'Championship Match')
+        });
+
+        function createEmptySeries(id, t1, t2, maxGames, label = '') {
+            const games = [];
+            for (let i = 0; i < maxGames; i++) {
+                games.push({
+                    map: '',
+                    winner: '', // '' (auto from rounds) | '1' | '2'
+                    t1Rounds: 0, t2Rounds: 0,
+                    t1Kills: 0, t2Kills: 0,
+                    t1Deaths: 0, t2Deaths: 0,
+                    t1Assists: 0, t2Assists: 0
+                });
+            }
+            return { id, label, t1, t2, maxGames, games };
+        }
+
+        let state = loadState();
+
+        function loadState() {
+            let parsed = null;
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) parsed = JSON.parse(raw);
+            } catch (e) { /* ignore storage restrictions */ }
+
+            if (!parsed && window.name && window.name.startsWith('VAL_STATE:')) {
+                try {
+                    parsed = JSON.parse(window.name.slice('VAL_STATE:'.length));
+                } catch (e) { /* ignore parse errors */ }
+            }
+
+            if (parsed && parsed.teams && parsed.rr && parsed.rr.length === 6 && parsed.finals) {
+                return parsed;
+            }
+            return defaultState();
+        }
+
+        function saveState() {
+            const serialized = JSON.stringify(state);
+            try {
+                localStorage.setItem(STORAGE_KEY, serialized);
+            } catch (e) { /* ignore storage quota/sandbox issues */ }
+            try {
+                window.name = 'VAL_STATE:' + serialized;
+            } catch (e) { /* ignore window.name errors */ }
+        }
+
+        window.addEventListener('beforeunload', saveState);
+        window.addEventListener('pagehide', saveState);
+
+        /**
+         * Evaluates a Best-of-3 Valorant series.
+         * Automatically infers the map winner if round scores are entered (e.g. 13-9)
+         * unless manually overridden, and locks Game 3 once a team reaches 2 map wins.
+         */
+        function evaluateSeries(series) {
+            const winTarget = Math.ceil(series.maxGames / 2); // 2 wins for Bo3
+            let t1Maps = 0, t2Maps = 0;
+            let t1Rounds = 0, t2Rounds = 0;
+            let t1Kills = 0, t2Kills = 0;
+            let t1Deaths = 0, t2Deaths = 0;
+            let t1Assists = 0, t2Assists = 0;
+            let seriesWinner = '';
+
+            const evaluatedGames = series.games.map((g) => {
+                const alreadyClinched = t1Maps >= winTarget || t2Maps >= winTarget;
+                const disabled = alreadyClinched;
+
+                // Auto-detect winner from round score if winner dropdown wasn't explicitly locked to the other team
+                let effectiveWinner = '';
+                if (!disabled) {
+                    if (g.winner === '1' || g.winner === '2') {
+                        effectiveWinner = g.winner;
+                    } else if (g.t1Rounds > g.t2Rounds && g.t1Rounds >= 13) {
+                        effectiveWinner = '1';
+                    } else if (g.t2Rounds > g.t1Rounds && g.t2Rounds >= 13) {
+                        effectiveWinner = '2';
+                    }
+
+                    t1Rounds += g.t1Rounds;
+                    t2Rounds += g.t2Rounds;
+                    t1Kills += g.t1Kills;
+                    t2Kills += g.t2Kills;
+                    t1Deaths += g.t1Deaths;
+                    t2Deaths += g.t2Deaths;
+                    t1Assists += g.t1Assists;
+                    t2Assists += g.t2Assists;
+
+                    if (effectiveWinner === '1') t1Maps++;
+                    else if (effectiveWinner === '2') t2Maps++;
+                }
+
+                return { ...g, disabled, effectiveWinner };
+            });
+
+            if (t1Maps >= winTarget) seriesWinner = '1';
+            else if (t2Maps >= winTarget) seriesWinner = '2';
+
+            return {
+                t1Maps, t2Maps,
+                t1Rounds, t2Rounds,
+                t1Kills, t2Kills,
+                t1Deaths, t2Deaths,
+                t1Assists, t2Assists,
+                seriesWinner,
+                evaluatedGames
+            };
+        }
+
+        /**
+         * Master Recalculation Loop
+         */
+        function recalculate() {
+            state.teams.A = document.getElementById('nameA').value.trim() || 'Team 1';
+            state.teams.B = document.getElementById('nameB').value.trim() || 'Team 2';
+            state.teams.C = document.getElementById('nameC').value.trim() || 'Team 3';
+            state.teams.D = document.getElementById('nameD').value.trim() || 'Team 4';
+            saveState();
+
+            const stats = {
+                A: { key: 'A', name: state.teams.A, seriesW: 0, seriesL: 0, mapsW: 0, mapsL: 0, roundsW: 0, roundsL: 0, points: 0, kills: 0, deaths: 0, assists: 0, h2h: {} },
+                B: { key: 'B', name: state.teams.B, seriesW: 0, seriesL: 0, mapsW: 0, mapsL: 0, roundsW: 0, roundsL: 0, points: 0, kills: 0, deaths: 0, assists: 0, h2h: {} },
+                C: { key: 'C', name: state.teams.C, seriesW: 0, seriesL: 0, mapsW: 0, mapsL: 0, roundsW: 0, roundsL: 0, points: 0, kills: 0, deaths: 0, assists: 0, h2h: {} },
+                D: { key: 'D', name: state.teams.D, seriesW: 0, seriesL: 0, mapsW: 0, mapsL: 0, roundsW: 0, roundsL: 0, points: 0, kills: 0, deaths: 0, assists: 0, h2h: {} }
+            };
+
+            state.rr.forEach((series) => {
+                const ev = evaluateSeries(series);
+                const t1 = stats[series.t1];
+                const t2 = stats[series.t2];
+
+                t1.mapsW += ev.t1Maps;
+                t1.mapsL += ev.t2Maps;
+                t1.roundsW += ev.t1Rounds;
+                t1.roundsL += ev.t2Rounds;
+                t1.kills += ev.t1Kills;
+                t1.deaths += ev.t1Deaths;
+                t1.assists += ev.t1Assists;
+
+                t2.mapsW += ev.t2Maps;
+                t2.mapsL += ev.t1Maps;
+                t2.roundsW += ev.t2Rounds;
+                t2.roundsL += ev.t1Rounds;
+                t2.kills += ev.t2Kills;
+                t2.deaths += ev.t2Deaths;
+                t2.assists += ev.t2Assists;
+
+                if (ev.seriesWinner === '1') {
+                    t1.seriesW++;
+                    t2.seriesL++;
+                    t1.h2h[series.t2] = 1;
+                    t2.h2h[series.t1] = -1;
+                    if (ev.t2Maps === 0) {
+                        t1.points += 3;
+                    } else {
+                        t1.points += 2;
+                        t2.points += 1;
+                    }
+                } else if (ev.seriesWinner === '2') {
+                    t2.seriesW++;
+                    t1.seriesL++;
+                    t2.h2h[series.t1] = 1;
+                    t1.h2h[series.t2] = -1;
+                    if (ev.t1Maps === 0) {
+                        t2.points += 3;
+                    } else {
+                        t2.points += 2;
+                        t1.points += 1;
+                    }
+                }
+            });
+
+            const ranked = Object.values(stats).sort((a, b) => {
+                if (b.points !== a.points) return b.points - a.points;
+
+                const netMapsA = a.mapsW - a.mapsL;
+                const netMapsB = b.mapsW - b.mapsL;
+                if (netMapsB !== netMapsA) return netMapsB - netMapsA;
+
+                const roundDiffA = a.roundsW - a.roundsL;
+                const roundDiffB = b.roundsW - b.roundsL;
+                if (roundDiffB !== roundDiffA) return roundDiffB - roundDiffA;
+
+                // 2-way Head-to-Head tiebreaker
+                const sameTierCount = Object.values(stats).filter(
+                    t => t.points === a.points &&
+                         (t.mapsW - t.mapsL) === netMapsA &&
+                         (t.roundsW - t.roundsL) === roundDiffA
+                ).length;
+                if (sameTierCount === 2 && a.h2h[b.key]) {
+                    return -a.h2h[b.key];
+                }
+
+                return b.kills - a.kills;
+            });
+
+            renderStandings(ranked);
+            renderRoundRobin();
+            renderFinals(ranked[0], ranked[1]);
+        }
+
+        function renderStandings(ranked) {
+            const tbody = document.getElementById('standingsBody');
+            tbody.innerHTML = ranked.map((t, idx) => {
+                const netMaps = t.mapsW - t.mapsL;
+                const netMapsLabel = netMaps > 0 ? `+${netMaps}` : `${netMaps}`;
+                const roundDiff = t.roundsW - t.roundsL;
+                const roundDiffLabel = roundDiff > 0 ? `+${roundDiff}` : `${roundDiff}`;
+                const kdRatio = t.deaths > 0 ? (t.kills / t.deaths).toFixed(2) : (t.kills > 0 ? t.kills.toFixed(2) : '0.00');
+                const statusLabel = idx < 2 ? 'ADVANCES (FINALS)' : 'ELIMINATED';
+
+                return `
+                    <tr>
+                        <td class="center bold">#${idx + 1}</td>
+                        <td class="bold">${escapeHtml(t.name)}</td>
+                        <td class="center">${t.seriesW}–${t.seriesL}</td>
+                        <td class="center">${t.mapsW}–${t.mapsL}</td>
+                        <td class="center">${netMapsLabel}</td>
+                        <td class="center">${t.roundsW}–${t.roundsL}</td>
+                        <td class="center">${roundDiffLabel}</td>
+                        <td class="center bold">${t.points}</td>
+                        <td class="num">${t.kills}</td>
+                        <td class="num">${t.deaths}</td>
+                        <td class="num">${t.assists}</td>
+                        <td class="center">${kdRatio}</td>
+                        <td class="center bold">${statusLabel}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderRoundRobin() {
+            const container = document.getElementById('rrContainer');
+            container.innerHTML = '';
+
+            state.rr.forEach((series, sIdx) => {
+                const ev = evaluateSeries(series);
+                const name1 = state.teams[series.t1];
+                const name2 = state.teams[series.t2];
+                const isDone = ev.seriesWinner !== '';
+                const statusText = isDone
+                    ? `FINAL: ${ev.seriesWinner === '1' ? name1 : name2} (${ev.t1Maps}–${ev.t2Maps})`
+                    : `IN PROGRESS (${ev.t1Maps}–${ev.t2Maps})`;
+
+                const card = document.createElement('div');
+                card.className = 'series-card';
+                card.innerHTML = `
+                    <div class="series-top">
+                        <div>
+                            <strong>SERIES ${sIdx + 1}: ${escapeHtml(name1)} vs ${escapeHtml(name2)}</strong>
+                            <span class="subtitle" style="margin-left: 8px;">[${escapeHtml(series.label)}]</span>
+                        </div>
+                        <span class="score-pill ${isDone ? 'done' : ''}">${escapeHtml(statusText)}</span>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Game</th>
+                                    <th>Map</th>
+                                    <th>Winner</th>
+                                    <th class="num">${escapeHtml(name1)} Rnds</th>
+                                    <th class="num">${escapeHtml(name2)} Rnds</th>
+                                    <th class="num">${escapeHtml(name1)} K</th>
+                                    <th class="num">${escapeHtml(name1)} D</th>
+                                    <th class="num">${escapeHtml(name1)} A</th>
+                                    <th class="num">${escapeHtml(name2)} K</th>
+                                    <th class="num">${escapeHtml(name2)} D</th>
+                                    <th class="num">${escapeHtml(name2)} A</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${ev.evaluatedGames.map((g, gIdx) => renderGameRow('rr', sIdx, gIdx, g, name1, name2)).join('')}
+                                <tr style="background: var(--muted); font-weight: 700;">
+                                    <td colspan="3">SERIES TOTALS</td>
+                                    <td class="num">${ev.t1Rounds}</td>
+                                    <td class="num">${ev.t2Rounds}</td>
+                                    <td class="num">${ev.t1Kills}</td>
+                                    <td class="num">${ev.t1Deaths}</td>
+                                    <td class="num">${ev.t1Assists}</td>
+                                    <td class="num">${ev.t2Kills}</td>
+                                    <td class="num">${ev.t2Deaths}</td>
+                                    <td class="num">${ev.t2Assists}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderFinals(seed1, seed2) {
+            const container = document.getElementById('finalsContainer');
+            const badge = document.getElementById('finalsChampionBadge');
+            const ev = evaluateSeries(state.finals);
+
+            const name1 = `Seed #1: ${seed1.name}`;
+            const name2 = `Seed #2: ${seed2.name}`;
+
+            if (ev.seriesWinner === '1') {
+                badge.textContent = `CHAMPION: ${seed1.name} (${ev.t1Maps}–${ev.t2Maps})`;
+                badge.classList.add('done');
+            } else if (ev.seriesWinner === '2') {
+                badge.textContent = `CHAMPION: ${seed2.name} (${ev.t2Maps}–${ev.t1Maps})`;
+                badge.classList.add('done');
+            } else {
+                badge.textContent = `SCORE: ${ev.t1Maps}–${ev.t2Maps}`;
+                badge.classList.remove('done');
+            }
+
+            container.innerHTML = `
+                <div class="series-card">
+                    <div class="series-top">
+                        <strong>GRAND FINALS (Bo3): ${escapeHtml(name1)} vs ${escapeHtml(name2)}</strong>
+                        <span class="subtitle">First to 2 Map Wins</span>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Game</th>
+                                    <th>Map</th>
+                                    <th>Winner</th>
+                                    <th class="num">${escapeHtml(seed1.name)} Rnds</th>
+                                    <th class="num">${escapeHtml(seed2.name)} Rnds</th>
+                                    <th class="num">${escapeHtml(seed1.name)} K</th>
+                                    <th class="num">${escapeHtml(seed1.name)} D</th>
+                                    <th class="num">${escapeHtml(seed1.name)} A</th>
+                                    <th class="num">${escapeHtml(seed2.name)} K</th>
+                                    <th class="num">${escapeHtml(seed2.name)} D</th>
+                                    <th class="num">${escapeHtml(seed2.name)} A</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${ev.evaluatedGames.map((g, gIdx) => renderGameRow('finals', 0, gIdx, g, seed1.name, seed2.name)).join('')}
+                                <tr style="background: var(--muted); font-weight: 700;">
+                                    <td colspan="3">FINALS TOTALS</td>
+                                    <td class="num">${ev.t1Rounds}</td>
+                                    <td class="num">${ev.t2Rounds}</td>
+                                    <td class="num">${ev.t1Kills}</td>
+                                    <td class="num">${ev.t1Deaths}</td>
+                                    <td class="num">${ev.t1Assists}</td>
+                                    <td class="num">${ev.t2Kills}</td>
+                                    <td class="num">${ev.t2Deaths}</td>
+                                    <td class="num">${ev.t2Assists}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderGameRow(stage, sIdx, gIdx, g, name1, name2) {
+            const mapOptions = VALORANT_MAPS.map(m =>
+                `<option value="${m}" ${g.map === m ? 'selected' : ''}>${m || '-- Map --'}</option>`
+            ).join('');
+
+            return `
+                <tr class="${g.disabled ? 'game-disabled' : ''}">
+                    <td class="bold">Game ${gIdx + 1}</td>
+                    <td>
+                        <select onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 'map', this.value, true)">
+                            ${mapOptions}
+                        </select>
+                    </td>
+                    <td>
+                        <select onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 'winner', this.value, true)">
+                            <option value="" ${g.effectiveWinner === '' ? 'selected' : ''}>-- Auto --</option>
+                            <option value="1" ${g.effectiveWinner === '1' ? 'selected' : ''}>${escapeHtml(name1)}</option>
+                            <option value="2" ${g.effectiveWinner === '2' ? 'selected' : ''}>${escapeHtml(name2)}</option>
+                        </select>
+                    </td>
+                    <td><input type="number" inputmode="numeric" min="0" value="${g.t1Rounds}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Rounds', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Rounds', this.value, true)"></td>
+                    <td><input type="number" inputmode="numeric" min="0" value="${g.t2Rounds}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Rounds', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Rounds', this.value, true)"></td>
+                    <td><input type="number" inputmode="numeric" min="0" value="${g.t1Kills}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Kills', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Kills', this.value, true)"></td>
+                    <td><input type="number" inputmode="numeric" min="0" value="${g.t1Deaths}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Deaths', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Deaths', this.value, true)"></td>
+                    <td><input type="number" inputmode="numeric" min="0" value="${g.t1Assists}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Assists', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Assists', this.value, true)"></td>
+                    <td><input type="number" inputmode="numeric" min="0" value="${g.t2Kills}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Kills', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Kills', this.value, true)"></td>
+                    <td><input type="number" inputmode="numeric" min="0" value="${g.t2Deaths}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Deaths', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Deaths', this.value, true)"></td>
+                    <td><input type="number" inputmode="numeric" min="0" value="${g.t2Assists}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Assists', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Assists', this.value, true)"></td>
+                </tr>
+            `;
+        }
+
+        function updateGameField(stage, sIdx, gIdx, field, value, shouldRender = true) {
+            const targetSeries = stage === 'rr' ? state.rr[sIdx] : state.finals;
+            if (field === 'winner' || field === 'map') {
+                targetSeries.games[gIdx][field] = value;
+            } else {
+                targetSeries.games[gIdx][field] = Math.max(0, parseInt(value, 10) || 0);
+                // Clear explicit winner override if rounds change so auto-win updates cleanly unless manually re-selected
+                if ((field === 't1Rounds' || field === 't2Rounds') && shouldRender) {
+                    const g = targetSeries.games[gIdx];
+                    if (g.t1Rounds >= 13 && g.t1Rounds > g.t2Rounds) g.winner = '1';
+                    else if (g.t2Rounds >= 13 && g.t2Rounds > g.t1Rounds) g.winner = '2';
+                    else if (g.t1Rounds < 13 && g.t2Rounds < 13) g.winner = '';
+                }
+            }
+            if (shouldRender) {
+                recalculate();
+            } else {
+                saveState();
+            }
+        }
+
+        /**
+         * Comprehensive CSV Export (Standings + Every Round Robin Map + Grand Finals Maps)
+         */
+        function exportCSV() {
+            const rows = [];
+            const csvEscape = (val) => `"${String(val).replace(/"/g, '""')}"`;
+
+            rows.push(['VALORANT TOURNAMENT AUTOMATED REPORT (4 TEAMS - ALL BO3)']);
+            rows.push(['Generated', new Date().toLocaleString()]);
+            rows.push([]);
+
+            // 1. Group Standings
+            rows.push(['GROUP STAGE STANDINGS (4-TEAM ROUND ROBIN - BO3)']);
+            rows.push(['Seed', 'Team Name', 'Series W-L', 'Maps W-L', 'Net Maps', 'Rounds W-L', 'Round Diff', 'Points', 'Kills', 'Deaths', 'Assists', 'K/D', 'Status']);
+            document.querySelectorAll('#standingsBody tr').forEach(tr => {
+                const cols = Array.from(tr.querySelectorAll('td')).map(td => csvEscape(td.innerText.trim()));
+                rows.push(cols);
+            });
+            rows.push([]);
+
+            // 2. Round Robin Map-by-Map Logs
+            rows.push(['ROUND ROBIN MATCH LOGS (BO3)']);
+            rows.push(['Series', 'Round', 'Game', 'Map', 'Team 1', 'Team 2', 'Winner', 'T1 Rounds', 'T2 Rounds', 'T1 Kills', 'T1 Deaths', 'T1 Assists', 'T2 Kills', 'T2 Deaths', 'T2 Assists']);
+
+            state.rr.forEach((series, sIdx) => {
+                const ev = evaluateSeries(series);
+                const n1 = state.teams[series.t1];
+                const n2 = state.teams[series.t2];
+                ev.evaluatedGames.forEach((g, gIdx) => {
+                    if (!g.disabled && (g.effectiveWinner || g.t1Rounds > 0 || g.t2Rounds > 0)) {
+                        const winName = g.effectiveWinner === '1' ? n1 : (g.effectiveWinner === '2' ? n2 : 'TBD');
+                        rows.push([
+                            `Series ${sIdx + 1}`, series.label, `Game ${gIdx + 1}`, g.map || 'Unassigned', n1, n2, winName,
+                            g.t1Rounds, g.t2Rounds, g.t1Kills, g.t1Deaths, g.t1Assists, g.t2Kills, g.t2Deaths, g.t2Assists
+                        ].map(csvEscape));
+                    }
+                });
+            });
+            rows.push([]);
+
+            // 3. Grand Finals Logs
+            rows.push(['GRAND FINALS LOGS (BO3)']);
+            const seed1Name = document.querySelector('#standingsBody tr:nth-child(1) td:nth-child(2)')?.innerText || 'Seed #1';
+            const seed2Name = document.querySelector('#standingsBody tr:nth-child(2) td:nth-child(2)')?.innerText || 'Seed #2';
+            const finalsEv = evaluateSeries(state.finals);
+
+            rows.push(['Stage', 'Game', 'Map', 'Seed #1', 'Seed #2', 'Winner', 'S1 Rounds', 'S2 Rounds', 'S1 Kills', 'S1 Deaths', 'S1 Assists', 'S2 Kills', 'S2 Deaths', 'S2 Assists']);
+            finalsEv.evaluatedGames.forEach((g, gIdx) => {
+                if (!g.disabled && (g.effectiveWinner || g.t1Rounds > 0 || g.t2Rounds > 0)) {
+                    const winName = g.effectiveWinner === '1' ? seed1Name : (g.effectiveWinner === '2' ? seed2Name : 'TBD');
+                    rows.push([
+                        'Grand Finals', `Game ${gIdx + 1}`, g.map || 'Unassigned', seed1Name, seed2Name, winName,
+                        g.t1Rounds, g.t2Rounds, g.t1Kills, g.t1Deaths, g.t1Assists, g.t2Kills, g.t2Deaths, g.t2Assists
+                    ].map(csvEscape));
+                }
+            });
+
+            const csvString = rows.map(r => r.join(',')).join('\n');
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `valorant_4team_tournament_${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Demo Data for 4-Team Valorant Round Robin
+        function loadDemoData() {
+            state = defaultState();
+            state.teams = { A: 'Sentinels', B: 'Paper Rex', C: 'Fnatic', D: 'DRX' };
+            document.getElementById('nameA').value = state.teams.A;
+            document.getElementById('nameB').value = state.teams.B;
+            document.getElementById('nameC').value = state.teams.C;
+            document.getElementById('nameD').value = state.teams.D;
+
+            // Series 1: A vs B (2-1)
+            state.rr[0].games[0] = { map: 'Ascent', winner: '1', t1Rounds: 13, t2Rounds: 9, t1Kills: 82, t2Kills: 68, t1Deaths: 68, t2Deaths: 82, t1Assists: 31, t2Assists: 24 };
+            state.rr[0].games[1] = { map: 'Bind', winner: '2', t1Rounds: 10, t2Rounds: 13, t1Kills: 74, t2Kills: 86, t1Deaths: 86, t2Deaths: 74, t1Assists: 27, t2Assists: 34 };
+            state.rr[0].games[2] = { map: 'Haven', winner: '1', t1Rounds: 13, t2Rounds: 11, t1Kills: 89, t2Kills: 81, t1Deaths: 81, t2Deaths: 89, t1Assists: 36, t2Assists: 29 };
+
+            // Series 2: C vs D (2-0)
+            state.rr[1].games[0] = { map: 'Lotus', winner: '1', t1Rounds: 13, t2Rounds: 6, t1Kills: 78, t2Kills: 54, t1Deaths: 54, t2Deaths: 78, t1Assists: 29, t2Assists: 18 };
+            state.rr[1].games[1] = { map: 'Split', winner: '1', t1Rounds: 13, t2Rounds: 8, t1Kills: 81, t2Kills: 61, t1Deaths: 61, t2Deaths: 81, t1Assists: 33, t2Assists: 21 };
+
+            // Series 3: A vs C (0-2)
+            state.rr[2].games[0] = { map: 'Sunset', winner: '2', t1Rounds: 8, t2Rounds: 13, t1Kills: 63, t2Kills: 80, t1Deaths: 80, t2Deaths: 63, t1Assists: 20, t2Assists: 32 };
+            state.rr[2].games[1] = { map: 'Icebox', winner: '2', t1Rounds: 11, t2Rounds: 13, t1Kills: 84, t2Kills: 91, t1Deaths: 91, t2Deaths: 84, t1Assists: 28, t2Assists: 35 };
+
+            // Series 4: B vs D (2-0)
+            state.rr[3].games[0] = { map: 'Pearl', winner: '1', t1Rounds: 13, t2Rounds: 7, t1Kills: 79, t2Kills: 58, t1Deaths: 58, t2Deaths: 79, t1Assists: 30, t2Assists: 19 };
+            state.rr[3].games[1] = { map: 'Abyss', winner: '1', t1Rounds: 13, t2Rounds: 10, t1Kills: 85, t2Kills: 72, t1Deaths: 72, t2Deaths: 85, t1Assists: 31, t2Assists: 25 };
+
+            // Series 5: A vs D (2-0)
+            state.rr[4].games[0] = { map: 'Haven', winner: '1', t1Rounds: 13, t2Rounds: 5, t1Kills: 76, t2Kills: 49, t1Deaths: 49, t2Deaths: 76, t1Assists: 28, t2Assists: 16 };
+            state.rr[4].games[1] = { map: 'Ascent', winner: '1', t1Rounds: 13, t2Rounds: 9, t1Kills: 83, t2Kills: 67, t1Deaths: 67, t2Deaths: 83, t1Assists: 34, t2Assists: 22 };
+
+            // Series 6: B vs C (1-2)
+            state.rr[5].games[0] = { map: 'Split', winner: '2', t1Rounds: 9, t2Rounds: 13, t1Kills: 69, t2Kills: 84, t1Deaths: 84, t2Deaths: 69, t1Assists: 23, t2Assists: 31 };
+            state.rr[5].games[1] = { map: 'Bind', winner: '1', t1Rounds: 13, t2Rounds: 10, t1Kills: 86, t2Kills: 75, t1Deaths: 75, t2Deaths: 86, t1Assists: 35, t2Assists: 26 };
+            state.rr[5].games[2] = { map: 'Lotus', winner: '2', t1Rounds: 12, t2Rounds: 14, t1Kills: 94, t2Kills: 101, t1Deaths: 101, t2Deaths: 94, t1Assists: 38, t2Assists: 41 };
+
+            recalculate();
+        }
+
+        // Custom Modal Dialog
+        function promptReset() {
+            const overlay = document.getElementById('modalOverlay');
+            document.getElementById('modalTitle').textContent = 'Confirm Reset';
+            document.getElementById('modalBody').textContent = 'Clear all Valorant match logs, standings, and reset all 4 team names to default?';
+            document.getElementById('modalActions').innerHTML = `
+                <button onclick="closeModal()">Cancel</button>
+                <button class="primary" onclick="executeReset()">Reset Everything</button>
+            `;
+            overlay.style.display = 'flex';
+        }
+
+        function executeReset() {
+            state = defaultState();
+            document.getElementById('nameA').value = state.teams.A;
+            document.getElementById('nameB').value = state.teams.B;
+            document.getElementById('nameC').value = state.teams.C;
+            document.getElementById('nameD').value = state.teams.D;
+            closeModal();
+            recalculate();
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').style.display = 'none';
+        }
+
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        // Boot
+        window.onload = () => {
+            document.getElementById('nameA').value = state.teams.A;
+            document.getElementById('nameB').value = state.teams.B;
+            document.getElementById('nameC').value = state.teams.C;
+            document.getElementById('nameD').value = state.teams.D;
+            recalculate();
+        };
+    </script>
+</body>
+</html>
