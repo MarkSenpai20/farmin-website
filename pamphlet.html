@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FarmIn — Exhibition Pamphlet & Brochure | STI College Laoag</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1b5e20;
+      --primary-light: #2e7d32;
+      --accent: #4caf50;
+      --accent-soft: #e8f5e9;
+      --gold: #b78103;
+      --gold-soft: #fff9c4;
+      --dark: #122116;
+      --body-text: #2c3e50;
+      --muted: #546e7a;
+      --border: #cfd8dc;
+      --white: #ffffff;
+      --paper-bg: #fcfdfc;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #2b3a30;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      color: var(--body-text);
+      line-height: 1.45;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* On-Screen Action Toolbar */
+    .toolbar {
+      background: #142419;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 50px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      position: sticky;
+      top: 15px;
+      z-index: 999;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .toolbar span {
+      font-size: 14px;
+      font-weight: 600;
+      color: #c8e6c9;
+    }
+
+    .toolbar-btn {
+      background: var(--primary-light);
+      color: #fff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .toolbar-btn:hover {
+      background: #388e3c;
+      transform: translateY(-1px);
+    }
+
+    .toolbar-btn.gold {
+      background: #fbc02d;
+      color: #000;
+    }
+
+    .toolbar-btn.gold:hover {
+      background: #fdd835;
+    }
+
+    .toolbar-btn.secondary {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Print Brochure Spread Dimensions (US Letter Landscape standard: 11in x 8.5in) */
+    .spread-container {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    .sheet-title {
+      color: #e8f5e9;
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: -15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sheet {
+      width: 100%;
+      aspect-ratio: 11 / 8.5;
+      background: var(--paper-bg);
+      border-radius: 8px;
+      box-shadow: 0 18px 45px rgba(0,0,0,0.35);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      overflow: hidden;
+      position: relative;
+      border: 1px solid #d7e0db;
+    }
+
+    /* Fold Guide Lines */
+    .panel {
+      padding: 24px 22px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background: #fff;
+    }
+
+    .panel:not(:last-child) {
+      border-right: 1px dashed #c0ccc4;
+    }
+
+    /* Typography inside Pamphlet */
+    h1 {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.15;
+    }
+
+    h2 {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid var(--accent-soft);
+      padding-bottom: 4px;
+    }
+
+    h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 4px;
+    }
+
+    p {
+      font-size: 11px;
+      color: var(--body-text);
+      line-height: 1.48;
+      margin-bottom: 8px;
+    }
+
+    .lead-tagline {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+
+    /* Visual Accent Blocks */
+    .highlight-card {
+      background: var(--accent-soft);
+      border: 1px solid #c8e6c9;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+
+    .gold-card {
+      background: #fffde7;
+      border: 1px solid #fff59d;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+
+    .stat-badge {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 10px;
+      color: var(--primary);
+      background: #dcedc8;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-right: 4px;
+    }
+
+    /* Lists */
+    ul.feature-list {
+      list-style: none;
+      margin-bottom: 10px;
+    }
+
+    ul.feature-list li {
+      font-size: 10.5px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      line-height: 1.35;
+    }
+
+    ul.feature-list li::before {
+      content: "✔";
+      color: var(--primary-light);
+      font-weight: 800;
+      font-size: 11px;
+      flex-shrink: 0;
+    }
+
+    /* Proponents Block */
+    .proponents-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .proponent-item {
+      background: #f4f7f5;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 10.5px;
+      border-left: 3px solid var(--primary);
+    }
+
+    .proponent-item strong {
+      display: block;
+      color: var(--dark);
+    }
+
+    .proponent-item span {
+      color: var(--muted);
+      font-size: 9.5px;
+    }
+
+    /* QR Code Placeholder */
+    .qr-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: auto;
+      padding-top: 10px;
+      border-top: 1px solid #e0e0e0;
+      text-align: center;
+    }
+
+    .qr-box {
+      width: 80px;
+      height: 80px;
+      background: #fff;
+      border: 2px solid var(--primary);
+      border-radius: 8px;
+      padding: 6px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qr-box svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .qr-caption {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Front Cover Panel Specific Styling */
+    .front-cover {
+      background: linear-gradient(145deg, #0d2813 0%, #1a3b22 100%);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      text-align: center;
+      padding: 28px 20px;
+    }
+
+    .front-cover h1 {
+      color: #fff;
+      font-size: 32px;
+      letter-spacing: 1px;
+    }
+
+    .front-cover p {
+      color: #dcedc8;
+    }
+
+    .cover-logo {
+      width: 70px;
+      height: 70px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #2e7d32, #81c784);
+      margin: 0 auto 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+
+    .cover-logo svg {
+      width: 42px;
+      height: 42px;
+      fill: #fff;
+    }
+
+    .institution-tag {
+      font-size: 11px;
+      font-weight: 700;
+      color: #fbc02d;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 6px;
+    }
+
+    .cover-badge-box {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 10px;
+      margin: 14px 0;
+    }
+
+    .cover-badge-box span {
+      display: block;
+      font-size: 10px;
+      color: #b0bec5;
+    }
+
+    .cover-badge-box strong {
+      font-size: 12px;
+      color: #fff;
+    }
+
+    /* Print Styles */
+    @media print {
+      @page {
+        size: letter landscape;
+        margin: 6mm;
+      }
+
+      body {
+        background: none;
+        padding: 0;
+      }
+
+      .toolbar {
+        display: none !important;
+      }
+
+      .sheet-title {
+        display: none !important;
+      }
+
+      .spread-container {
+        gap: 0;
+        max-width: none;
+        width: 100%;
+      }
+
+      .sheet {
+        box-shadow: none;
+        border: none;
+        page-break-after: always;
+        break-after: page;
+        border-radius: 0;
+        height: 100vh;
+        max-height: 8.3in;
+      }
+
+      .panel {
+        padding: 18px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating On-Screen Controls -->
+  <div class="toolbar">
+    <span>Exhibition Pamphlet • Print Ready</span>
+    <button class="toolbar-btn gold" onclick="window.print()">
+      <span>🖨️ Print Brochure / Save PDF</span>
+    </button>
+    <a href="index.html" class="toolbar-btn secondary">
+      <span>🌐 Open Showcase Website</span>
+    </a>
+  </div>
+
+  <div class="spread-container">
+
+    <!-- SPREAD 1: OUTSIDE (When folded: Left = Proponents/Credits, Center = Architecture/Specs, Right = Front Cover) -->
+    <div class="sheet-title">📄 Outside Spread (Cover & Summary)</div>
+    <div class="sheet">
+
+      <!-- Outside Left Panel: Proponents & Academic Credits -->
+      <div class="panel">
+        <h2>The Research Team</h2>
+        <p style="font-size:10px; color:var(--muted); margin-bottom:10px;">
+          BS Computer Science Candidates, STI College Laoag • Academic Year 2026
+        </p>
+
+        <div class="proponents-grid">
+          <div class="proponent-item">
+            <strong>Clyde Leonard F. Gaoiran</strong>
+            <span>Lead Researcher / Proponent</span>
+          </div>
+          <div class="proponent-item">
+            <strong>Mark Jhon Angelo L. Cruz</strong>
+            <span>Data & Time-Series Pipeline</span>
+          </div>
+          <div class="proponent-item">
+            <strong>Lyka Mae B. Tabieros</strong>
+            <span>System Evaluation & Documentation</span>
+          </div>
+          <div class="proponent-item">
+            <strong>Angel C. Tabios</strong>
+            <span>UI/UX & Ilokano Localization</span>
+          </div>
+        </div>
+
+        <div class="gold-card" style="margin-top:14px;">
+          <h3 style="font-size:11px; color:#856404; margin-bottom:2px;">Thesis Adviser</h3>
+          <p style="font-size:11.5px; font-weight:700; margin-bottom:0; color:#333;">Donna Mae A. Santos</p>
+          <span style="font-size:9.5px; color:#666;">STI College Laoag</span>
+        </div>
+
+        <div class="qr-container">
+          <div class="qr-box">
+            <svg viewBox="0 0 100 100">
+              <rect width="100" height="100" fill="none" stroke="#1b5e20" stroke-width="2"/>
+              <rect x="10" y="10" width="24" height="24" fill="#1b5e20"/>
+              <rect x="66" y="10" width="24" height="24" fill="#1b5e20"/>
+              <rect x="10" y="66" width="24" height="24" fill="#1b5e20"/>
+              <rect x="16" y="16" width="12" height="12" fill="#fff"/>
+              <rect x="72" y="16" width="12" height="12" fill="#fff"/>
+              <rect x="16" y="72" width="12" height="12" fill="#fff"/>
+              <rect x="42" y="12" width="16" height="8" fill="#1b5e20"/>
+              <rect x="42" y="32" width="16" height="16" fill="#1b5e20"/>
+              <rect x="66" y="44" width="20" height="10" fill="#1b5e20"/>
+              <rect x="42" y="60" width="16" height="26" fill="#1b5e20"/>
+              <rect x="68" y="66" width="22" height="22" fill="#1b5e20"/>
+            </svg>
+          </div>
+          <div class="qr-caption">Scan for Live Demo & Codebase</div>
+        </div>
+      </div>
+
+      <!-- Outside Center Panel: Architecture & Production Engineering -->
+      <div class="panel">
+        <h2>System Architecture</h2>
+        <p>A serverless forecasting loop built to run on zero maintenance and zero operational budget.</p>
+
+        <div class="highlight-card">
+          <h3>Serverless GitHub Actions Pipeline</h3>
+          <p style="font-size:10px; margin-bottom:0;">
+            Daily automated workflow retrieves PSA OpenSTAT & DA Bantay Presyo feeds, retrains SARIMA in memory, and pushes static JSON directly to GitHub CDN.
+          </p>
+        </div>
+
+        <div class="highlight-card">
+          <h3>Cloud & Security Foundation</h3>
+          <p style="font-size:10px; margin-bottom:0;">
+            PostgreSQL on Supabase with Row-Level Security (RLS) protects farmer ledgers. Instant guest mode allows full forecasting trial with zero signup friction.
+          </p>
+        </div>
+
+        <div class="highlight-card">
+          <h3>Offline-First Resilience</h3>
+          <p style="font-size:10px; margin-bottom:0;">
+            Custom write-through cache allows smallholders in remote agricultural areas to calculate profits and check saved forecasts even without cellular reception.
+          </p>
+        </div>
+
+        <div style="margin-top:auto; font-size:9.5px; color:var(--muted); text-align:center; padding-top:8px;">
+          Verified codebase: 6,400+ Dart LOC • 29 Screens • 36 Unit Tests
+        </div>
+      </div>
+
+      <!-- Outside Right Panel: Front Cover -->
+      <div class="panel front-cover">
+        <div>
+          <div class="institution-tag">STI College Laoag • BSCS Thesis 2026</div>
+          <div class="cover-logo">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+          </div>
+          <h1>FarmIn</h1>
+          <p class="lead-tagline">Farm + Intelligence for Ilocos Norte</p>
+        </div>
+
+        <div>
+          <div class="cover-badge-box">
+            <span>Research Title:</span>
+            <strong>Supply, Demand, and Market Pricing Forecasting Trends for Rice Farmers in Ilocos Norte</strong>
+          </div>
+          <p style="font-size:10.5px; line-height:1.4; color:#c8e6c9;">
+            Bridging empirical agricultural statistics and smallholder farmers through accessible, bilingual AI decision support.
+          </p>
+        </div>
+
+        <div style="font-size:10px; color:#81c784; font-weight:700; letter-spacing:0.5px;">
+          THESIS EXHIBITION & SHOWCASE
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SPREAD 2: INSIDE (When opened: Left = The Problem, Center = Core AI Features, Right = Practical Tools & Language) -->
+    <div class="sheet-title" style="margin-top:20px;">📖 Inside Spread (Full Content)</div>
+    <div class="sheet">
+
+      <!-- Inside Left Panel: The Problem & Research Need -->
+      <div class="panel">
+        <h2>The Core Challenge</h2>
+        <div class="lead-tagline" style="color:var(--primary); font-size:11px;">Why Rice Farmers Need FarmIn</div>
+        
+        <p>
+          Rice farming remains the economic backbone of Ilocos Norte, yet smallholders face severe market disadvantages:
+        </p>
+
+        <ul class="feature-list">
+          <li>
+            <div>
+              <strong>Price Asymmetry:</strong> Farmers sell upon harvest due to financial urgency, often unaware of impending seasonal price surges.
+            </div>
+          </li>
+          <li>
+            <div>
+              <strong>Middleman Dominance:</strong> Field traders dictate farmgate rates, capturing the lion's share of retail profit.
+            </div>
+          </li>
+          <li>
+            <div>
+              <strong>Language & Literacy Barriers:</strong> Complex agritech software is built in academic English with steep learning curves.
+            </div>
+          </li>
+        </ul>
+
+        <div class="gold-card" style="margin-top:auto;">
+          <h3 style="font-size:11px; color:#856404;">The FarmIn Mission</h3>
+          <p style="font-size:10px; margin-bottom:0;">
+            Provide every rice farmer with three definitive answers: 
+            <strong>What will rice sell for?</strong>, 
+            <strong>When is the best time to sell?</strong>, and 
+            <strong>What is my true profit?</strong>
+          </p>
+        </div>
+      </div>
+
+      <!-- Inside Center Panel: Core AI Forecasting & Sell Alerts -->
+      <div class="panel">
+        <h2>AI Forecasting & Sell Alerts</h2>
+
+        <div class="highlight-card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3>SARIMA Price Forecast</h3>
+            <span class="stat-badge">6-Month Horizon</span>
+          </div>
+          <p style="font-size:10px; margin-top:4px;">
+            Trained on 60 monthly PSA observations (2021–2025). The seasonal SARIMA <code>(2,1,2)(0,0,2)[12]</code> model achieves an optimal AIC of <strong>639.79</strong>, projecting future farmgate movements.
+          </p>
+        </div>
+
+        <div class="highlight-card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3>Algorithmic Sell/Hold Alerts</h3>
+            <span class="stat-badge" style="background:#ffe082;">Peak Detection</span>
+          </div>
+          <p style="font-size:10px; margin-top:4px;">
+            Scans future price peaks and triggers a clear <strong>SELL NOW</strong> or <strong>HOLD</strong> badge with estimated extra income (e.g. +₱6,000 per 5 MT yield).
+          </p>
+        </div>
+
+        <div class="highlight-card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3>Supply & Demand Balance</h3>
+            <span class="stat-badge">PSA Volume</span>
+          </div>
+          <p style="font-size:10px; margin-top:4px;">
+            Quarterly palay volume synthesis from PSA data tracks regional supply levels, helping farmers understand market scarcity.
+          </p>
+        </div>
+      </div>
+
+      <!-- Inside Right Panel: Practical Calculators & Inclusivity -->
+      <div class="panel">
+        <h2>Decision Tools & Inclusivity</h2>
+
+        <h3 style="margin-top:4px;">Smart Agricultural Calculators</h3>
+        <p style="font-size:10.5px; margin-bottom:6px;">Three purpose-built field calculators tailor estimates to exact plot dimensions:</p>
+
+        <ul class="feature-list">
+          <li>
+            <div><strong>Profit Calculator:</strong> Pairs predicted price with yield and official production costs to show actual net margins.</div>
+          </li>
+          <li>
+            <div><strong>Seed Calculator:</strong> Computes bag requirements for direct seeding vs. transplanting methods.</div>
+          </li>
+          <li>
+            <div><strong>Fertilizer Calculator:</strong> Computes N-P-K splits based on farm size and target yield.</div>
+          </li>
+        </ul>
+
+        <h3 style="margin-top:10px;">Weather-Aware Planting Calendar</h3>
+        <p style="font-size:10.5px; margin-bottom:8px;">
+          Integrates real-time OpenWeatherMap data for Laoag City with agronomic guidelines across 4 distinct rice growth stages.
+        </p>
+
+        <div class="highlight-card" style="margin-top:auto; background:#f1f8e9; border-color:#a5d6a7;">
+          <h3 style="color:var(--primary); font-size:11px;">100% English + Ilokano Bilingual</h3>
+          <p style="font-size:10px; margin-bottom:0;">
+            Every single screen, financial figure, and advisory warning is natively translated to Ilokano to eliminate linguistic exclusion.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</body>
+</html>

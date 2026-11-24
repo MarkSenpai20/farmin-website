@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FarmIn — Thesis Exhibition & Showcase | STI College Laoag</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #091A10;
+      --bg-surface: #0e2417;
+      --card-bg: #142C19;
+      --card-highlight: #1A3B22;
+      --border-color: rgba(129, 199, 132, 0.2);
+      --border-active: #81C784;
+      --green-primary: #2E7D32;
+      --green-accent: #81C784;
+      --green-light: #C8E6C9;
+      --gold: #FBC02D;
+      --gold-light: #FFF59D;
+      --text-main: #FFFFFF;
+      --text-muted: #B0BEC5;
+      --text-faded: #78909C;
+      --danger: #EF5350;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 22px;
+      --radius-full: 9999px;
+      --shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(46, 125, 50, 0.22) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(251, 192, 45, 0.12) 0%, transparent 40%);
+      background-attachment: fixed;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Typography helpers */
+    h1, h2, h3, h4 {
+      font-weight: 800;
+      line-height: 1.25;
+      color: #fff;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: var(--radius-full);
+      font-size: 13px;
+      font-weight: 600;
+      background: rgba(129, 199, 132, 0.12);
+      border: 1px solid rgba(129, 199, 132, 0.35);
+      color: var(--green-accent);
+      letter-spacing: 0.3px;
+      margin-bottom: 20px;
+    }
+
+    .badge-pill.gold {
+      background: rgba(251, 192, 45, 0.12);
+      border-color: rgba(251, 192, 45, 0.35);
+      color: var(--gold);
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #FFFFFF 30%, var(--green-accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .gold-text {
+      color: var(--gold);
+    }
+
+    /* Navigation */
+    nav.navbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(9, 26, 16, 0.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 14px 0;
+    }
+
+    .nav-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: #fff;
+    }
+
+    .nav-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--green-primary), var(--green-accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(46, 125, 50, 0.4);
+    }
+
+    .nav-logo svg {
+      width: 24px;
+      height: 24px;
+      fill: #fff;
+    }
+
+    .nav-title {
+      font-weight: 800;
+      font-size: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      align-items: center;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      transition: color 0.2s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--green-accent);
+    }
+
+    .nav-cta {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      border: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #2E7D32, #43A047);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(46, 125, 50, 0.35);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #388E3C, #4CAF50);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(46, 125, 50, 0.5);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: var(--green-accent);
+      color: var(--green-accent);
+      transform: translateY(-2px);
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, #F57F17, #FBC02D);
+      color: #091A10;
+      font-weight: 800;
+    }
+
+    .btn-gold:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(251, 192, 45, 0.4);
+    }
+
+    /* Hero Section */
+    header.hero {
+      padding: 70px 0 90px;
+      position: relative;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 50px;
+      align-items: center;
+    }
+
+    .hero-content h1 {
+      font-size: 46px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      letter-spacing: -0.5px;
+    }
+
+    .hero-content p.thesis-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--green-accent);
+      margin-bottom: 18px;
+      line-height: 1.45;
+    }
+
+    .hero-content p.lead {
+      font-size: 16px;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      max-width: 580px;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 36px;
+      padding: 16px 20px;
+      background: rgba(20, 44, 25, 0.55);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+    }
+
+    .hero-meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .hero-meta-item span.label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-faded);
+      font-weight: 600;
+    }
+
+    .hero-meta-item span.val {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    /* Live Phone Prototype Frame */
+    .mockup-container {
+      position: relative;
+      display: flex;
+      justify-content: center;
+    }
+
+    .phone-mockup {
+      width: 320px;
+      height: 640px;
+      background: #091A10;
+      border: 8px solid #203d27;
+      border-radius: 40px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(46, 125, 50, 0.2);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .phone-notch {
+      width: 120px;
+      height: 18px;
+      background: #203d27;
+      margin: 0 auto;
+      border-radius: 0 0 12px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .notch-camera {
+      width: 6px;
+      height: 6px;
+      background: #091A10;
+      border-radius: 50%;
+    }
+
+    .phone-screen {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: #091A10;
+      color: #fff;
+      font-size: 12px;
+    }
+
+    .phone-screen::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Phone UI Components */
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .app-brand {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 800;
+      font-size: 14px;
+      color: var(--green-accent);
+    }
+
+    .app-badge {
+      font-size: 10px;
+      background: rgba(251, 192, 45, 0.15);
+      color: var(--gold);
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+
+    .app-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(129, 199, 132, 0.2);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .alert-banner {
+      background: linear-gradient(135deg, rgba(251, 192, 45, 0.2), rgba(251, 192, 45, 0.05));
+      border: 1px solid var(--gold);
+      border-radius: 12px;
+      padding: 10px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .alert-tag {
+      background: var(--gold);
+      color: #000;
+      font-weight: 800;
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .mini-chart {
+      height: 70px;
+      margin: 8px 0;
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      padding-top: 10px;
+    }
+
+    .mini-bar {
+      flex: 1;
+      background: linear-gradient(to top, #2E7D32, #81C784);
+      border-radius: 3px 3px 0 0;
+      position: relative;
+    }
+
+    .mini-bar.forecast {
+      background: linear-gradient(to top, #F57F17, #FBC02D);
+    }
+
+    .mini-bar span {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 8px;
+      font-weight: 700;
+    }
+
+    .app-nav {
+      height: 48px;
+      background: #142C19;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 9px;
+      color: var(--text-faded);
+    }
+
+    .app-nav-item.active {
+      color: var(--green-accent);
+      font-weight: 700;
+    }
+
+    /* Key Metrics / Highlights Bar */
+    .metrics-section {
+      padding: 30px 0 60px;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      text-align: center;
+      transition: transform 0.25s ease, border-color 0.25s ease;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--green-accent);
+    }
+
+    .metric-num {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--gold);
+      font-family: 'JetBrains Mono', monospace;
+      margin-bottom: 4px;
+    }
+
+    .metric-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    /* Section Headers */
+    .section-header {
+      text-align: center;
+      max-width: 680px;
+      margin: 0 auto 50px;
+    }
+
+    .section-header h2 {
+      font-size: 34px;
+      margin-bottom: 14px;
+    }
+
+    .section-header p {
+      color: var(--text-muted);
+      font-size: 15px;
+    }
+
+    /* Features Section */
+    .features-section {
+      padding: 70px 0;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+    }
+
+    .feature-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: all 0.25s ease;
+    }
+
+    .feature-card:hover {
+      border-color: var(--green-accent);
+      transform: translateY(-5px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .feature-icon-box {
+      width: 52px;
+      height: 52px;
+      border-radius: var(--radius-sm);
+      background: rgba(129, 199, 132, 0.12);
+      border: 1px solid rgba(129, 199, 132, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .feature-card h3 {
+      font-size: 19px;
+      margin-bottom: 10px;
+    }
+
+    .feature-card p {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.55;
+      margin-bottom: 18px;
+      flex-grow: 1;
+    }
+
+    .feature-tag {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--green-accent);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Interactive Demo / Feature Simulator Tabs */
+    .demo-section {
+      padding: 70px 0;
+      background: rgba(14, 36, 23, 0.5);
+      border-top: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .tab-nav {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 36px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      padding: 10px 22px;
+      border-radius: var(--radius-full);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active, .tab-btn:hover {
+      background: var(--green-primary);
+      border-color: var(--green-accent);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(46, 125, 50, 0.4);
+    }
+
+    .tab-content {
+      display: none;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 36px;
+      box-shadow: var(--shadow);
+    }
+
+    .tab-content.active {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 36px;
+      align-items: center;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .tab-info h3 {
+      font-size: 26px;
+      margin-bottom: 14px;
+    }
+
+    .tab-info p {
+      color: var(--text-muted);
+      font-size: 15px;
+      margin-bottom: 20px;
+    }
+
+    .tab-checklist {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .tab-checklist li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .tab-checklist li svg {
+      width: 18px;
+      height: 18px;
+      fill: var(--green-accent);
+      flex-shrink: 0;
+    }
+
+    .demo-preview-card {
+      background: #091A10;
+      border: 1px solid rgba(129, 199, 132, 0.3);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* Architecture Section */
+    .architecture-section {
+      padding: 80px 0;
+    }
+
+    .arch-flow {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      position: relative;
+      margin-top: 40px;
+    }
+
+    .arch-step {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      position: relative;
+    }
+
+    .arch-step-num {
+      position: absolute;
+      top: -12px;
+      left: 20px;
+      background: var(--gold);
+      color: #000;
+      font-weight: 800;
+      font-size: 11px;
+      padding: 2px 10px;
+      border-radius: var(--radius-full);
+    }
+
+    .arch-step h4 {
+      font-size: 16px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+      color: var(--green-accent);
+    }
+
+    .arch-step p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Diagram Viewer Modal trigger */
+    .diagram-cta-box {
+      margin-top: 40px;
+      background: linear-gradient(135deg, rgba(20, 44, 25, 0.8), rgba(26, 59, 34, 0.9));
+      border: 1px solid rgba(129, 199, 132, 0.3);
+      border-radius: var(--radius-md);
+      padding: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    /* Proponents & Team Section */
+    .team-section {
+      padding: 80px 0 100px;
+      background: rgba(9, 26, 16, 0.7);
+    }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+
+    .member-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      text-align: center;
+      transition: all 0.25s ease;
+    }
+
+    .member-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-4px);
+    }
+
+    .member-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: rgba(129, 199, 132, 0.15);
+      border: 2px solid var(--green-accent);
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 22px;
+      color: var(--green-accent);
+    }
+
+    .member-card.adviser .member-avatar {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: rgba(251, 192, 45, 0.15);
+    }
+
+    .member-name {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .member-role {
+      font-size: 12px;
+      color: var(--text-faded);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+    }
+
+    .adviser-banner {
+      max-width: 600px;
+      margin: 0 auto;
+      background: rgba(251, 192, 45, 0.08);
+      border: 1px solid rgba(251, 192, 45, 0.3);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      text-align: center;
+    }
+
+    /* Footer */
+    footer {
+      background: #050E09;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 40px 0 30px;
+      font-size: 13px;
+      color: var(--text-faded);
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+      .hero-content p.lead {
+        margin: 0 auto 30px;
+      }
+      .hero-actions {
+        justify-content: center;
+      }
+      .hero-meta {
+        justify-content: center;
+      }
+      .metrics-grid, .features-grid, .arch-flow, .team-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .tab-content.active {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .metrics-grid, .features-grid, .arch-flow, .team-grid {
+        grid-template-columns: 1fr;
+      }
+      .nav-links {
+        display: none;
+      }
+      .hero-content h1 {
+        font-size: 32px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="container nav-inner">
+      <a href="#home" class="nav-brand">
+        <div class="nav-logo">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+        </div>
+        <span class="nav-title">FarmIn</span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#about">About</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#demo">Live Demo</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#team">Proponents</a></li>
+      </ul>
+
+      <div class="nav-cta">
+        <a href="pamphlet.html" target="_blank" class="btn btn-gold">
+          <span>📄 View Pamphlet</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero" id="home">
+    <div class="container hero-grid">
+      <div class="hero-content">
+        <div class="badge-pill gold">
+          <span>🌾 STI College Laoag • BS Computer Science 2026</span>
+        </div>
+        <h1>
+          Farm Intelligence <br>
+          <span class="gradient-text">for Northern Fields.</span>
+        </h1>
+        <p class="thesis-title">
+          Supply, Demand, and Market Pricing Forecasting Trends for Rice Farmers in Ilocos Norte
+        </p>
+        <p class="lead">
+          A full-stack, offline-tolerant decision support mobile app converting five years of PSA farmgate prices into three plain-language answers: 
+          <strong>what will rice sell for</strong>, <strong>when to sell</strong>, and <strong>what you will actually earn</strong>.
+        </p>
+
+        <div class="hero-meta">
+          <div class="hero-meta-item">
+            <span class="label">Forecasting Model</span>
+            <span class="val">SARIMA (2,1,2)(0,0,2)[12]</span>
+          </div>
+          <div class="hero-meta-item">
+            <span class="label">Target Province</span>
+            <span class="val">Ilocos Norte (Laoag City Hub)</span>
+          </div>
+          <div class="hero-meta-item">
+            <span class="label">Localization</span>
+            <span class="val">100% English + Ilokano</span>
+          </div>
+          <div class="hero-meta-item">
+            <span class="label">Status</span>
+            <span class="val gold-text">Feature Complete / UAT</span>
+          </div>
+        </div>
+
+        <div class="hero-actions">
+          <a href="#demo" class="btn btn-primary">
+            <span>🚀 Explore Interactive Demo</span>
+          </a>
+          <a href="pamphlet.html" target="_blank" class="btn btn-secondary">
+            <span>🖨️ Print Exhibition Brochure</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Live Mockup Component -->
+      <div class="mockup-container">
+        <div class="phone-mockup">
+          <div class="phone-notch">
+            <div class="notch-camera"></div>
+          </div>
+          <div class="phone-screen">
+            <div class="app-header">
+              <div class="app-brand">
+                <span>🌱 FarmIn</span>
+              </div>
+              <span class="app-badge">Ilokano / EN</span>
+            </div>
+
+            <!-- Price Recommendation Card -->
+            <div class="alert-banner">
+              <span class="alert-tag">SELL NOW</span>
+              <div>
+                <strong style="display:block; font-size:11px;">Expected Peak: Nov 2026</strong>
+                <span style="font-size:10px; color:#ddd;">Projected: ₱21.40/kg (+₱1.20 vs Aug)</span>
+              </div>
+            </div>
+
+            <!-- Price Forecast Card -->
+            <div class="app-card">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:700; color:var(--green-accent);">Farmgate Forecast</span>
+                <span style="color:var(--gold); font-size:10px;">6-Month Trend</span>
+              </div>
+              <div class="mini-chart">
+                <div class="mini-bar" style="height:60%;"><span>₱20.1</span></div>
+                <div class="mini-bar" style="height:65%;"><span>₱20.4</span></div>
+                <div class="mini-bar" style="height:72%;"><span>₱20.9</span></div>
+                <div class="mini-bar forecast" style="height:85%;"><span>₱21.4</span></div>
+                <div class="mini-bar forecast" style="height:80%;"><span>₱21.2</span></div>
+                <div class="mini-bar forecast" style="height:76%;"><span>₱21.0</span></div>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:9px; color:#aaa;">
+                <span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span>
+              </div>
+            </div>
+
+            <!-- Profit Estimate preview -->
+            <div class="app-card" style="background:#1A3B22;">
+              <span style="font-size:10px; text-transform:uppercase; color:#81C784; font-weight:700;">Calculator Quick-Look</span>
+              <div style="display:flex; justify-content:space-between; margin-top:4px;">
+                <span>Est. Net Margin:</span>
+                <strong style="color:var(--gold); font-size:13px;">₱42,500 / ha</strong>
+              </div>
+            </div>
+
+            <!-- Weather Preview -->
+            <div class="app-card" style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <span style="font-size:10px; color:#bbb;">Laoag City Live</span>
+                <div style="font-size:13px; font-weight:700;">29°C · Clear Sky</div>
+              </div>
+              <span style="font-size:20px;">☀️</span>
+            </div>
+          </div>
+
+          <!-- Bottom Navigation Mock -->
+          <div class="app-nav">
+            <div class="app-nav-item active">📊 Forecast</div>
+            <div class="app-nav-item">🧮 Tools</div>
+            <div class="app-nav-item">📅 Calendar</div>
+            <div class="app-nav-item">👤 Profile</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Metrics Section -->
+  <section class="metrics-section">
+    <div class="container">
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-num">6,431</div>
+          <div class="metric-label">Dart / Flutter LOC</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">639.8</div>
+          <div class="metric-label">SARIMA Model AIC</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">100%</div>
+          <div class="metric-label">Offline-Tolerant Cache</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">29</div>
+          <div class="metric-label">Polished App Screens</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Problem & Solution Overview -->
+  <section class="features-section" id="about">
+    <div class="container">
+      <div class="section-header">
+        <div class="badge-pill">The Research Challenge</div>
+        <h2>Empowering Smallholders Against Market Uncertainty</h2>
+        <p>
+          Rice farming in Ilocos Norte has long suffered from asymmetric price information. Smallholder farmers often sell in panic during harvest gluts, leaving substantial profit on the table.
+        </p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon-box">📉</div>
+          <span class="feature-tag">The Problem</span>
+          <h3>Volatile Farmgate Prices</h3>
+          <p>
+            Traders leverage sudden seasonal price drops. Farmers lack predictive foresight and sell immediately at lower harvest rates rather than timing peak market conditions.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">🧠</div>
+          <span class="feature-tag">Our Innovation</span>
+          <h3>Seasonal Time-Series AI</h3>
+          <p>
+            By integrating monthly PSA historical data with automated SARIMA modeling, FarmIn forecasts farmgate price trends 6 months ahead with measurable statistical confidence.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">🗣️</div>
+          <span class="feature-tag">Real Accessibility</span>
+          <h3>Zero-Friction Inclusivity</h3>
+          <p>
+            Native Ilokano translations, guest access mode without required email registration, and full offline caching ensure even remote barangays benefit.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Core App Features -->
+  <section class="features-section" id="features" style="background: rgba(14, 36, 23, 0.35);">
+    <div class="container">
+      <div class="section-header">
+        <div class="badge-pill gold">Key Capabilities</div>
+        <h2>Designed Specifically for the Field</h2>
+        <p>Every feature translates dense agricultural datasets into actionable decisions a farmer can trust.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon-box">📈</div>
+          <span class="feature-tag">Module 1</span>
+          <h3>6-Month Farmgate Forecast</h3>
+          <p>Trained on 60+ months of official PSA data. Distinguishes farmgate field rates from retail supermarket prices to prevent misleading margins.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">🔔</div>
+          <span class="feature-tag">Module 2</span>
+          <h3>Smart Sell Alerts</h3>
+          <p>Automated peak-month detection. Plain-language recommendation: <strong>SELL NOW</strong> or <strong>HOLD</strong>, paired with estimated profit gains.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">🧮</div>
+          <span class="feature-tag">Module 3</span>
+          <h3>Financial & Field Calculators</h3>
+          <p>Dynamic calculations for Net Profit, Seed requirements (direct seeding vs transplanting), and Nitrogen-Phosphorus-Potassium fertilizer bags.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">📅</div>
+          <span class="feature-tag">Module 4</span>
+          <h3>Weather-Aware Calendar</h3>
+          <p>Synchronized with live Laoag OpenWeatherMap conditions. Displays phase-by-phase agronomic tips and warnings in English and Ilokano.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">⚖️</div>
+          <span class="feature-tag">Module 5</span>
+          <h3>Regional Supply-Demand</h3>
+          <p>Exponential-smoothing model estimating palay surpluses and deficits across Ilocos Norte, contextualizing why prices fluctuate.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">💾</div>
+          <span class="feature-tag">Module 6</span>
+          <h3>Offline Write-Through Cache</h3>
+          <p>Zero-network resilience. The app automatically caches previous predictions and inputs, working flawlessly even in deep rural fields.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Demo Simulator Section -->
+  <section class="demo-section" id="demo">
+    <div class="container">
+      <div class="section-header">
+        <div class="badge-pill">Exhibition Interactive Showcase</div>
+        <h2>Test FarmIn Features Live</h2>
+        <p>Click below to preview the actual logic, recommendations, and calculations running inside the mobile app.</p>
+      </div>
+
+      <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('forecast')">📊 Price Forecasting</button>
+        <button class="tab-btn" onclick="switchTab('advisor')">🔔 Sell/Hold Advisor</button>
+        <button class="tab-btn" onclick="switchTab('profit')">🧮 Profit Calculator</button>
+        <button class="tab-btn" onclick="switchTab('calendar')">📅 Planting Calendar</button>
+        <button class="tab-btn" onclick="switchTab('ilokano')">🗣️ Ilokano Localization</button>
+      </div>
+
+      <!-- Tab 1: Forecast -->
+      <div id="tab-forecast" class="tab-content active">
+        <div class="tab-info">
+          <h3>SARIMA Farmgate Price Trajectory</h3>
+          <p>The app projects regional farmgate prices (dry palay) for the upcoming 6 months using monthly seasonal parameters (period = 12).</p>
+          <ul class="tab-checklist">
+            <li>
+              <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+              Trained on PSA historical farmgate series (Jan 2021 – Dec 2025)
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+              Dual price tracking: Farmgate field prices separated from DA Retail Bantay Presyo
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+              Serverless static delivery ensures instantaneous load with 0 cold start
+            </li>
+          </ul>
+        </div>
+        <div class="demo-preview-card">
+          <div style="font-weight:700; color:var(--gold); margin-bottom:12px;">Simulated 6-Month Projection (₱/kg)</div>
+          <table style="width:100%; border-collapse:collapse; font-size:13px;">
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.1); color:#aaa;">
+              <th style="text-align:left; padding:8px 0;">Month</th>
+              <th style="text-align:right; padding:8px 0;">Projected Price</th>
+              <th style="text-align:right; padding:8px 0;">Trend</th>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+              <td style="padding:8px 0;">Current (Baseline)</td>
+              <td style="text-align:right; font-weight:700;">₱20.20</td>
+              <td style="text-align:right; color:#81C784;">—</td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+              <td style="padding:8px 0;">Month 1 (Oct)</td>
+              <td style="text-align:right; font-weight:700;">₱20.75</td>
+              <td style="text-align:right; color:#81C784;">+2.7% ↑</td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+              <td style="padding:8px 0;">Month 2 (Nov)</td>
+              <td style="text-align:right; font-weight:700; color:var(--gold);">₱21.40 (Peak)</td>
+              <td style="text-align:right; color:var(--gold);">+5.9% ↑</td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+              <td style="padding:8px 0;">Month 3 (Dec)</td>
+              <td style="text-align:right; font-weight:700;">₱21.25</td>
+              <td style="text-align:right; color:#EF5350;">-0.7% ↓</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;">Month 4 (Jan)</td>
+              <td style="text-align:right; font-weight:700;">₱21.10</td>
+              <td style="text-align:right; color:#EF5350;">-1.4% ↓</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 2: Advisor -->
+      <div id="tab-advisor" class="tab-content">
+        <div class="tab-info">
+          <h3>Algorithmic Sell/Hold Advisor</h3>
+          <p>Takes the stress out of market timing. Instead of raw charts, FarmIn provides a single, unambiguous recommendation with financial rationale.</p>
+          <ul class="tab-checklist">
+            <li>
+              <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+              Peak price detection across the active forecast window
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+              Quantifies exact estimated extra income gained by holding vs selling early
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+              Adapts to user harvest month selection
+            </li>
+          </ul>
+        </div>
+        <div class="demo-preview-card">
+          <div style="background:#231a06; border:1px solid var(--gold); border-radius:10px; padding:16px; margin-bottom:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="background:var(--gold); color:#000; font-weight:800; font-size:11px; padding:3px 8px; border-radius:4px;">RECOMMENDATION: HOLD</span>
+              <span style="color:var(--gold); font-size:12px; font-weight:700;">Peak: November</span>
+            </div>
+            <p style="font-size:13px; margin-top:10px; color:#fff;">
+              "Prices are expected to rise by <strong>₱1.20/kg</strong> between now and November. If you hold dry harvest for 6 weeks, your projected bonus revenue is <strong>₱6,000 per 5,000 kg</strong>."
+            </p>
+          </div>
+          <div style="font-size:11px; color:#aaa;">* Accounts for standard storage conditions and moisture levels.</div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Profit Calculator -->
+      <div id="tab-profit" class="tab-content">
+        <div class="tab-info">
+          <h3>Interactive Net Profit Estimator</h3>
+          <p>Farmers can enter their farm size and expected yield. FarmIn pairs this with the predicted farmgate price and baseline regional input costs.</p>
+          <ul class="tab-checklist">
+            <li>
+              <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+              Formula: (Forecast Price × Yield in kg) − Total Input Expenses
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+              Saved directly to farmer's cloud record or local offline ledger
+            </li>
+          </ul>
+        </div>
+        <div class="demo-preview-card">
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div>
+              <label style="font-size:11px; color:#bbb;">Farm Size (Hectares):</label>
+              <input type="range" min="0.5" max="5.0" step="0.5" value="1.5" id="simHectares" oninput="updateProfitSim()" style="width:100%; accent-color:var(--green-accent);">
+              <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700;">
+                <span>0.5 ha</span><span id="hectareVal" style="color:var(--green-accent);">1.5 ha</span><span>5.0 ha</span>
+              </div>
+            </div>
+            <div style="background:#142C19; border-radius:8px; padding:12px; border:1px solid rgba(129,199,132,0.2);">
+              <div style="display:flex; justify-content:space-between; font-size:12px;">
+                <span>Gross Revenue:</span>
+                <strong id="simGross">₱144,450</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:12px; margin-top:4px;">
+                <span>Estimated Production Costs:</span>
+                <span id="simCosts" style="color:#EF5350;">₱63,000</span>
+              </div>
+              <hr style="border:none; border-top:1px solid rgba(255,255,255,0.1); margin:8px 0;">
+              <div style="display:flex; justify-content:space-between; font-size:14px;">
+                <span style="font-weight:700;">Net Projected Profit:</span>
+                <strong id="simNet" style="color:var(--gold); font-size:16px;">₱81,450</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 4: Calendar -->
+      <div id="tab-calendar" class="tab-content">
+        <div class="tab-info">
+          <h3>Climate-Aware Planting Calendar</h3>
+          <p>Tracks the 4 crucial rice growth stages (Land Prep, Vegetative, Reproductive, Ripening) with real-time Laoag City weather conditions.</p>
+          <ul class="tab-checklist">
+            <li>
+              <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+              Live temperature and precipitation warnings via OpenWeatherMap
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+              Agronomic advice for each phase tailored to wet & dry season cycles
+            </li>
+          </ul>
+        </div>
+        <div class="demo-preview-card">
+          <div style="border-left:3px solid var(--green-accent); padding-left:12px; margin-bottom:12px;">
+            <div style="font-size:11px; color:var(--green-accent); font-weight:700;">ACTIVE STAGE: VEGETATIVE PHASE</div>
+            <strong style="font-size:14px;">Days 25 – 60 (Tillering & Stem Elongation)</strong>
+            <p style="font-size:12px; color:#bbb; margin-top:4px;">
+              Maintain 2–3 cm shallow water level. Apply second nitrogen fertilizer split before panicle initiation.
+            </p>
+          </div>
+          <div style="background:#142C19; padding:8px 12px; border-radius:6px; font-size:11px; display:flex; justify-content:space-between;">
+            <span>Weather Advisory: High solar radiation expected</span>
+            <span style="color:var(--gold);">Ideal for Topdressing</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 5: Ilokano -->
+      <div id="tab-ilokano" class="tab-content">
+        <div class="tab-info">
+          <h3>100% Bilingual Accessibility</h3>
+          <p>Designed with empathy for local language preference. Every single card, label, and advisory tip can be toggled instantly to Ilokano.</p>
+          <ul class="tab-checklist">
+            <li>
+              <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+              Bridges digital literacy barriers among aging Ilocano farmers
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+              Verified against local agricultural terminology in Northern Luzon
+            </li>
+          </ul>
+        </div>
+        <div class="demo-preview-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <span style="font-size:11px; color:#aaa;">Side-by-side comparison:</span>
+            <span class="badge-pill" style="margin:0; padding:2px 10px; font-size:11px;">English ⇄ Ilokano</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:12px;">
+            <div style="background:#142C19; padding:10px; border-radius:6px;">
+              <strong style="color:var(--green-accent);">English</strong>
+              <p style="margin-top:6px; color:#ccc;">"Best time to sell: Hold for peak prices in November."</p>
+              <p style="margin-top:6px; color:#ccc;">"Planting Calendar & Advisory"</p>
+            </div>
+            <div style="background:#1A3B22; padding:10px; border-radius:6px; border:1px solid rgba(251,192,45,0.3);">
+              <strong style="color:var(--gold);">Ilokano</strong>
+              <p style="margin-top:6px; color:#fff;">"Kasayaatan a panaglako: Iur-uray ti nangato a presyo inton Nobyembre."</p>
+              <p style="margin-top:6px; color:#fff;">"Kalendaryo ti Panagmula ken Pammagbaga"</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Technical Architecture & Pipeline -->
+  <section class="architecture-section" id="architecture">
+    <div class="container">
+      <div class="section-header">
+        <div class="badge-pill gold">System Design & Engineering</div>
+        <h2>Serverless, Zero-Cost Forecasting Pipeline</h2>
+        <p>Built for zero downtime and instant response without burdening researchers with recurring server bills.</p>
+      </div>
+
+      <div class="arch-flow">
+        <div class="arch-step">
+          <span class="arch-step-num">Step 1</span>
+          <h4>Data Aggregation</h4>
+          <p>Pulls 60-month PSA OpenSTAT farmgate series + daily Department of Agriculture Bantay Presyo market scrapes.</p>
+        </div>
+
+        <div class="arch-step">
+          <span class="arch-step-num">Step 2</span>
+          <h4>Automated Training</h4>
+          <p>Scheduled GitHub Actions pipeline fits <code>auto_arima</code> in memory with seasonal parameters (SARIMA AIC: 639.8).</p>
+        </div>
+
+        <div class="arch-step">
+          <span class="arch-step-num">Step 3</span>
+          <h4>Static CDN Delivery</h4>
+          <p>Generates pre-rendered JSON payloads to GitHub CDN. Eliminates cold-start server lag and 100% of server hosting costs.</p>
+        </div>
+
+        <div class="arch-step">
+          <span class="arch-step-num">Step 4</span>
+          <h4>Mobile Client & Sync</h4>
+          <p>Flutter app caches data locally for full offline resilience, while Supabase handles PostgreSQL storage & Row-Level Security.</p>
+        </div>
+      </div>
+
+      <!-- Diagram Viewer Banner -->
+      <div class="diagram-cta-box">
+        <div>
+          <h3 style="font-size:20px; margin-bottom:6px;">Formal Thesis Diagrams & System Models</h3>
+          <p style="color:var(--text-muted); font-size:14px; max-width:650px;">
+            The research includes comprehensive IEEE/UML diagrams: 4-Tier Architecture, SARIMA Pipeline, Data Flow Diagrams (DFD), Entity Relationship Diagrams (ERD), and Network Topology.
+          </p>
+        </div>
+        <a href="pamphlet.html" target="_blank" class="btn btn-primary">
+          <span>📑 Open Exhibition Pamphlet</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Research Proponents & Advisers -->
+  <section class="team-section" id="team">
+    <div class="container">
+      <div class="section-header">
+        <div class="badge-pill">The Research Team</div>
+        <h2>Meet the Proponents & Faculty</h2>
+        <p>BS Computer Science Candidates · STI College Laoag · Academic Year 2026</p>
+      </div>
+
+      <div class="team-grid">
+        <div class="member-card">
+          <div class="member-avatar">CG</div>
+          <div class="member-name">Clyde Leonard F. Gaoiran</div>
+          <div class="member-role">Thesis Proponent</div>
+        </div>
+
+        <div class="member-card">
+          <div class="member-avatar">MC</div>
+          <div class="member-name">Mark Jhon Angelo L. Cruz</div>
+          <div class="member-role">Thesis Proponent</div>
+        </div>
+
+        <div class="member-card">
+          <div class="member-avatar">LT</div>
+          <div class="member-name">Lyka Mae B. Tabieros</div>
+          <div class="member-role">Thesis Proponent</div>
+        </div>
+
+        <div class="member-card">
+          <div class="member-avatar">AT</div>
+          <div class="member-name">Angel C. Tabios</div>
+          <div class="member-role">Thesis Proponent</div>
+        </div>
+      </div>
+
+      <div class="adviser-banner">
+        <span style="font-size:11px; text-transform:uppercase; color:var(--gold); font-weight:700; letter-spacing:0.5px;">Under the Guidance of</span>
+        <h3 style="font-size:20px; margin-top:4px; margin-bottom:4px;">Donna Mae A. Santos</h3>
+        <span style="font-size:13px; color:var(--text-muted);">Thesis Adviser · STI College Laoag</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container footer-inner">
+      <div>
+        <strong style="color:#fff; font-size:16px;">FarmIn (Farm + Intelligence)</strong>
+        <p style="margin-top:4px;">STI College Laoag • Thesis Exhibition & Defense Showcase</p>
+      </div>
+      <div>
+        <a href="#home" class="btn btn-secondary" style="font-size:12px; padding:6px 14px;">Back to Top ↑</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Tab Switching Logic
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      
+      const targetContent = document.getElementById('tab-' + tabId);
+      if (targetContent) {
+        targetContent.classList.add('active');
+      }
+
+      // Highlight active button
+      event.currentTarget.classList.add('active');
+    }
+
+    // Profit Calculator Simulator
+    function updateProfitSim() {
+      const hectares = parseFloat(document.getElementById('simHectares').value);
+      document.getElementById('hectareVal').innerText = hectares.toFixed(1) + ' ha';
+
+      const yieldKgPerHa = 4500;
+      const forecastPrice = 21.40;
+      const costPerHa = 42000;
+
+      const totalYieldKg = hectares * yieldKgPerHa;
+      const grossRevenue = totalYieldKg * forecastPrice;
+      const totalCost = hectares * costPerHa;
+      const netProfit = grossRevenue - totalCost;
+
+      document.getElementById('simGross').innerText = '₱' + Math.round(grossRevenue).toLocaleString();
+      document.getElementById('simCosts').innerText = '₱' + Math.round(totalCost).toLocaleString();
+      document.getElementById('simNet').innerText = '₱' + Math.round(netProfit).toLocaleString();
+    }
+  </script>
+</body>
+</html>
