@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MLBB Tournament Manager — Automated System</title>
+    <title>MLBB Single Elimination Manager</title>
     <style>
-        /* Minimalist Brutalist Black & White Theme */
+        /* Strict Minimalist Black & White Design */
         :root {
             --bg: #ffffff;
             --fg: #000000;
-            --muted: #f5f5f5;
+            --muted: #f4f4f4;
             --border: #000000;
-            --subtle-border: #cccccc;
+            --subtle: #cccccc;
             --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
             --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
@@ -29,11 +29,11 @@
             font-size: 13px;
             line-height: 1.4;
             padding: 20px;
-            max-width: 1360px;
+            max-width: 1440px;
             margin: 0 auto;
         }
 
-        /* Header & Controls */
+        /* Header & Toolbar */
         header {
             border-bottom: 2px solid var(--border);
             padding-bottom: 16px;
@@ -55,14 +55,14 @@
 
         .subtitle {
             font-family: var(--font-mono);
-            font-size: 12px;
-            color: #444;
+            font-size: 11px;
+            color: #444444;
         }
 
         .toolbar {
             display: flex;
-            gap: 8px;
             flex-wrap: wrap;
+            gap: 8px;
         }
 
         button {
@@ -92,11 +92,13 @@
             background: #333333;
         }
 
-        /* Layout Sections */
+        /* Sections */
         section {
             border: 1px solid var(--border);
             padding: 16px;
             margin-bottom: 24px;
+            min-width: 0;
+            max-width: 100%;
         }
 
         .section-header {
@@ -108,38 +110,44 @@
             padding-bottom: 8px;
             margin-bottom: 16px;
             display: flex;
+            flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
+            gap: 8px;
         }
 
-        /* Team Inputs */
-        .team-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 16px;
+        /* Setup Controls */
+        .setup-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-end;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--subtle);
         }
 
-        .input-box {
+        .control-group {
             display: flex;
             flex-direction: column;
             gap: 4px;
         }
 
-        .input-box label {
+        .control-group label {
             font-family: var(--font-mono);
             font-size: 11px;
-            text-transform: uppercase;
             font-weight: 700;
+            text-transform: uppercase;
         }
 
         input[type="text"], input[type="number"], select {
-            width: 100%;
             border: 1px solid var(--border);
             background: var(--bg);
             color: var(--fg);
             font-family: var(--font-mono);
             font-size: 12px;
             padding: 6px 8px;
+            width: 100%;
         }
 
         input:focus, select:focus {
@@ -147,10 +155,39 @@
             outline-offset: -2px;
         }
 
-        /* Tables */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+            gap: 12px;
+        }
+
+        .team-item {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border);
+        }
+
+        .seed-tag {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 6px 10px;
+            background: var(--muted);
+            border-right: 1px solid var(--border);
+            white-space: nowrap;
+        }
+
+        .team-item input {
+            border: none;
+            padding: 6px 8px;
+        }
+
+        /* Tables & Scroll Containment */
         .table-wrap {
             width: 100%;
+            max-width: 100%;
             overflow-x: auto;
+            min-width: 0;
         }
 
         table {
@@ -182,101 +219,151 @@
 
         td input[type="number"] {
             text-align: right;
+            min-width: 56px;
+        }
+
+        td input[type="text"] {
+            min-width: 72px;
+        }
+
+        td select {
+            min-width: 125px;
         }
 
         .num { text-align: right; }
         .center { text-align: center; }
         .bold { font-weight: 700; }
 
-        /* Mobile Input Sizing & Responsive Layout */
-        td input[type="number"] {
-            min-width: 54px;
+        .note {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: #444444;
+            margin-top: 10px;
+            line-height: 1.5;
         }
 
-        td input[type="text"] {
-            min-width: 64px;
+        /* Visual Single Elimination Bracket Tree */
+        .bracket-scroll {
+            width: 100%;
+            overflow-x: auto;
+            min-width: 0;
+            padding-bottom: 8px;
         }
 
-        td select {
-            min-width: 110px;
+        .bracket-board {
+            display: flex;
+            gap: 24px;
+            align-items: stretch;
+            min-width: max-content;
         }
 
-        @media (max-width: 768px) {
-            body {
-                padding: 12px;
-            }
-
-            header {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 12px;
-            }
-
-            .toolbar {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 8px;
-                width: 100%;
-            }
-
-            .toolbar button.primary {
-                grid-column: span 2;
-            }
-
-            button {
-                padding: 12px 14px;
-                font-size: 12px;
-            }
-
-            section {
-                padding: 12px;
-                margin-bottom: 16px;
-            }
-
-            .section-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 4px;
-            }
-
-            .team-grid {
-                grid-template-columns: 1fr;
-                gap: 12px;
-            }
-
-            input[type="text"], input[type="number"], select {
-                font-size: 16px; /* Prevents iOS auto-zoom on focus */
-                padding: 8px;
-            }
-
-            td input[type="number"], td input[type="text"], td select {
-                font-size: 14px;
-                padding: 8px 6px;
-            }
-
-            th, td {
-                padding: 8px 6px;
-            }
-
-            .series-card {
-                padding: 10px;
-            }
-
-            .series-top {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .score-pill {
-                align-self: flex-start;
-            }
+        .bracket-col {
+            display: flex;
+            flex-direction: column;
+            min-width: 240px;
+            max-width: 260px;
         }
 
-        /* Series Cards */
+        .bracket-col-title {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 6px 8px;
+            border: 1px solid var(--border);
+            background: var(--muted);
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .bracket-col-matches {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            flex: 1;
+            gap: 14px;
+        }
+
+        .b-match {
+            border: 1px solid var(--border);
+            background: var(--bg);
+            font-family: var(--font-mono);
+            font-size: 11px;
+        }
+
+        .b-match-head {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 8px;
+            background: var(--muted);
+            border-bottom: 1px solid var(--border);
+            font-weight: 700;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+
+        .b-slot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 8px;
+            gap: 8px;
+        }
+
+        .b-slot:first-of-type {
+            border-bottom: 1px solid var(--subtle);
+        }
+
+        .b-slot.winner {
+            background: var(--fg);
+            color: var(--bg);
+            font-weight: 700;
+        }
+
+        .b-slot.bye {
+            color: #666666;
+            font-style: italic;
+        }
+
+        .b-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .b-score {
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        /* Match Entry Logs */
+        .round-group {
+            margin-bottom: 24px;
+            min-width: 0;
+        }
+
+        .round-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .round-banner {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            background: var(--fg);
+            color: var(--bg);
+            padding: 6px 10px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
         .series-grid {
             display: grid;
             grid-template-columns: minmax(0, 1fr);
-            gap: 20px;
+            gap: 16px;
             min-width: 0;
         }
 
@@ -294,9 +381,9 @@
             justify-content: space-between;
             align-items: center;
             gap: 8px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             padding-bottom: 8px;
-            border-bottom: 1px solid var(--subtle-border);
+            border-bottom: 1px solid var(--subtle);
             font-family: var(--font-mono);
         }
 
@@ -304,7 +391,8 @@
             border: 1px solid var(--border);
             padding: 2px 8px;
             font-weight: 700;
-            font-size: 12px;
+            font-size: 11px;
+            text-transform: uppercase;
         }
 
         .score-pill.done {
@@ -318,19 +406,77 @@
             background: var(--muted);
         }
 
-        .note {
-            font-family: var(--font-mono);
-            font-size: 11px;
-            color: #444;
-            margin-top: 8px;
+        /* Responsive Mobile Styles */
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+
+            header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+
+            .toolbar {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+
+            .toolbar button.primary {
+                grid-column: span 2;
+            }
+
+            button {
+                padding: 11px 12px;
+                font-size: 11px;
+            }
+
+            section {
+                padding: 12px;
+                margin-bottom: 16px;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .setup-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
+
+            input[type="text"], input[type="number"], select {
+                font-size: 16px;
+                padding: 8px;
+            }
+
+            td input[type="number"], td input[type="text"], td select {
+                font-size: 14px;
+                padding: 8px 6px;
+            }
+
+            th, td {
+                padding: 8px 6px;
+            }
+
+            .series-card {
+                padding: 10px;
+            }
         }
 
-        /* Custom Modal Notification (No alert/confirm) */
+        /* Custom Modal */
         #modalOverlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.55);
             align-items: center;
             justify-content: center;
             z-index: 1000;
@@ -341,7 +487,7 @@
             background: var(--bg);
             border: 2px solid var(--border);
             padding: 20px;
-            max-width: 400px;
+            max-width: 440px;
             width: 100%;
             font-family: var(--font-mono);
         }
@@ -357,6 +503,7 @@
         #modalBody {
             font-size: 12px;
             margin-bottom: 16px;
+            line-height: 1.5;
         }
 
         #modalActions {
@@ -370,87 +517,85 @@
 
     <header>
         <div>
-            <h1>MLBB Tournament System</h1>
-            <div class="subtitle">Automated 3-Team Round Robin (Bo3) &amp; Grand Finals (Bo5)</div>
+            <h1>MLBB Single Elimination Manager</h1>
+            <div class="subtitle">Dynamic Bracket (Bo3 Rounds) &rarr; Grand Finals (Bo5) | Highest Stat Points = Higher Seed</div>
         </div>
         <div class="toolbar">
             <button onclick="loadDemoData()">Load Demo Data</button>
-            <button onclick="promptReset()">Reset All</button>
-            <button class="primary" onclick="exportCSV()">Export CSV</button>
+            <button onclick="promptReset()">Reset Data</button>
+            <button class="primary" onclick="exportCSV()">Export to CSV</button>
         </div>
     </header>
 
-    <!-- 01. TEAM REGISTRATION -->
+    <!-- 01. DYNAMIC TEAM COUNT & REGISTRATION -->
     <section>
         <div class="section-header">
-            <span>01. Participating Teams</span>
-            <span class="subtitle">Auto-syncs across all brackets</span>
+            <span>01. Team Count &amp; Bracket Seeding Setup</span>
+            <span class="subtitle" id="bracketMetaBadge">4 Teams | 2 Rounds | 0 BYEs</span>
         </div>
-        <div class="team-grid">
-            <div class="input-box">
-                <label for="nameA">Team A</label>
-                <input type="text" id="nameA" value="Team Alpha" oninput="recalculate()">
+        <div class="setup-controls">
+            <div class="control-group" style="min-width: 180px;">
+                <label for="teamCountInput">Number of Teams (2–16)</label>
+                <input type="number" id="teamCountInput" inputmode="numeric" min="2" max="16" value="4">
             </div>
-            <div class="input-box">
-                <label for="nameB">Team B</label>
-                <input type="text" id="nameB" value="Team Bravo" oninput="recalculate()">
-            </div>
-            <div class="input-box">
-                <label for="nameC">Team C</label>
-                <input type="text" id="nameC" value="Team Charlie" oninput="recalculate()">
-            </div>
+            <button class="primary" onclick="applyTeamCount()">Generate Bracket</button>
+            <button onclick="promptReseedByStats()">Apply Stat Points as Bracket Seeds</button>
         </div>
+        <div class="team-grid" id="teamInputsGrid"></div>
     </section>
 
-    <!-- 02. AUTOMATED STANDINGS -->
+    <!-- 02. STATISTICAL POINTS & SEED RANKING TABLE -->
     <section>
         <div class="section-header">
-            <span>02. Live Group Standings</span>
-            <span class="subtitle">Top 2 Advance to Bo5 Finals</span>
+            <span>02. Statistical Points &amp; Seed Ranking Leaderboard</span>
+            <span class="subtitle">Highest Statistical Points = Higher Seed Ranking</span>
         </div>
         <div class="table-wrap">
-            <table id="standingsTable">
+            <table id="statsTable">
                 <thead>
                     <tr>
-                        <th class="center">Seed</th>
+                        <th class="center">Stat Rank</th>
+                        <th class="center">Bracket Seed</th>
                         <th>Team Name</th>
+                        <th class="center">Status</th>
                         <th class="center">Series W-L</th>
                         <th class="center">Games W-L</th>
-                        <th class="center">Net Games</th>
-                        <th class="center">Points</th>
-                        <th class="num">Total Kills</th>
+                        <th class="center">Stat Points</th>
+                        <th class="num">Kills</th>
+                        <th class="num">Deaths</th>
+                        <th class="num">Towers</th>
+                        <th class="center">Lord/Turtle</th>
                         <th class="num">Total Gold</th>
-                        <th class="center">Towers</th>
-                        <th class="center">Lord / Turtle</th>
-                        <th class="center">Total Win Time</th>
-                        <th class="center">Status</th>
+                        <th class="center">Fastest / Total Win</th>
                     </tr>
                 </thead>
-                <tbody id="standingsBody"></tbody>
+                <tbody id="statsBody"></tbody>
             </table>
         </div>
         <div class="note">
-            Rules: 2-0 Win = 3 pts | 2-1 Win = 2 pts | 1-2 Loss = 1 pt | 0-2 Loss = 0 pts. 
-            Tiebreakers: 1. Points &rarr; 2. Net Game Wins &rarr; 3. Head-to-Head (2-way) &rarr; 4. Shortest Total Win Time &rarr; 5. Total Towers &rarr; 6. Total Gold.
+            <strong>Statistical Points Formula (Highest Points = #1 Seed):</strong><br>
+            Game Win: <strong>+100 pts</strong> | Series Win: <strong>+50 pts</strong> | Kill: <strong>+3 pts</strong> | Death: <strong>-1 pt</strong> | Tower Destroyed: <strong>+10 pts</strong> | Lord Slain: <strong>+15 pts</strong> | Turtle Slain: <strong>+8 pts</strong> | Gold Efficiency: <strong>+1 pt per 2,000 Gold</strong> | Fast-Win Bonus (&lt;15:00): <strong>+25 pts</strong>.
         </div>
     </section>
 
-    <!-- 03. ROUND ROBIN GAME-BY-GAME ENTRY -->
+    <!-- 03. SINGLE ELIMINATION BRACKET TREE -->
     <section>
         <div class="section-header">
-            <span>03. Round Robin Match Logs (Best of 3)</span>
-            <span class="subtitle">Enter individual game stats; series scores auto-compute</span>
+            <span>03. Single Elimination Bracket Tree</span>
+            <span id="championBanner" class="score-pill">Champion: TBD</span>
         </div>
-        <div class="series-grid" id="rrContainer"></div>
+        <div class="bracket-scroll">
+            <div class="bracket-board" id="bracketTree"></div>
+        </div>
     </section>
 
-    <!-- 04. GRAND FINALS (BEST OF 5) -->
+    <!-- 04. MATCH SCORESHEETS (BO3 ROUNDS + BO5 GRAND FINALS) -->
     <section>
         <div class="section-header">
-            <span>04. Grand Finals (Best of 5)</span>
-            <span id="finalsChampionBadge" class="score-pill">Awaiting Group Stage</span>
+            <span>04. Match Logs (Bo3 Bracket Rounds &amp; Bo5 Grand Finals)</span>
+            <span class="subtitle">Winners advance automatically to the next bracket slot</span>
         </div>
-        <div id="finalsContainer"></div>
+        <div id="matchLogsContainer"></div>
     </section>
 
     <!-- Custom Modal -->
@@ -464,35 +609,50 @@
 
     <script>
         /**
-         * State Management
-         * Stores all raw game entries so series, standings, tiebreakers, and finals auto-compute deterministically.
-         * Uses dual-layer persistence (localStorage + window.name fallback) so accidental refreshes always restore state.
+         * MLBB Single Elimination Tournament Manager
+         * - Dynamic N teams (2 to 16) with automatic power-of-2 bracket & standard tournament seeding (1 vs N, 2 vs N-1...)
+         * - Automatic BYE assignment & advancement in Round 1 when N is not a power of 2
+         * - All rounds prior to Grand Finals = Best of 3 (first to 2 wins)
+         * - Grand Finals = Best of 5 (first to 3 wins)
+         * - Live Statistical Points calculation + one-click re-seeding by Statistical Points
+         * - Dual-layer auto-save persistence (localStorage + window.name fallback)
          */
-        const STORAGE_KEY = 'mlbb_auto_tournament_v1';
+        const STORAGE_KEY = 'mlbb_single_elim_v1';
 
-        const defaultState = () => ({
-            teams: { A: 'Team Alpha', B: 'Team Bravo', C: 'Team Charlie' },
-            rr: [
-                createEmptySeries('rr1', 'A', 'B', 3),
-                createEmptySeries('rr2', 'B', 'C', 3),
-                createEmptySeries('rr3', 'A', 'C', 3)
-            ],
-            finals: createEmptySeries('finals', 'SEED1', 'SEED2', 5)
-        });
+        const DEFAULT_TEAM_NAMES = [
+            'ONIC Esports', 'Team Liquid ID', 'Blacklist International', 'AP.Bren',
+            'RRQ Hoshi', 'Falcons AP.Bren', 'Selangor Red Giants', 'See You Soon',
+            'EVOS Glory', 'Bigetron Alpha', 'Echo Philippines', 'Aurora Gaming',
+            'RSG PH', 'HomeBois', 'NIP Flash', 'Team Spirit'
+        ];
 
-        function createEmptySeries(id, t1, t2, maxGames) {
-            const games = [];
-            for (let i = 0; i < maxGames; i++) {
-                games.push({
-                    winner: '', // '' | '1' | '2'
-                    duration: '', // 'MM:SS'
-                    t1Kills: 0, t2Kills: 0,
-                    t1Gold: 0, t2Gold: 0,
-                    t1Towers: 0, t2Towers: 0,
-                    t1Objectives: 0, t2Objectives: 0 // Combined Lord + Turtle
+        function createEmptyGame() {
+            return {
+                winner: '', // '' | '1' | '2'
+                duration: '', // 'MM:SS'
+                t1Kills: 0, t2Kills: 0,
+                t1Deaths: 0, t2Deaths: 0,
+                t1Gold: 0, t2Gold: 0,
+                t1Towers: 0, t2Towers: 0,
+                t1Lord: 0, t2Lord: 0,
+                t1Turtle: 0, t2Turtle: 0
+            };
+        }
+
+        function createDefaultState(count = 4) {
+            const teams = [];
+            for (let i = 0; i < count; i++) {
+                teams.push({
+                    id: `T${i + 1}`,
+                    seed: i + 1,
+                    name: DEFAULT_TEAM_NAMES[i] || `Team ${i + 1}`
                 });
             }
-            return { id, t1, t2, maxGames, games };
+            return {
+                teamCount: count,
+                teams,
+                matches: {} // keyed by matchId e.g. "R1_M1"
+            };
         }
 
         let state = loadState();
@@ -502,261 +662,545 @@
             try {
                 const raw = localStorage.getItem(STORAGE_KEY);
                 if (raw) parsed = JSON.parse(raw);
-            } catch (e) { /* ignore localStorage errors in restricted frames */ }
+            } catch (e) { /* ignore storage restrictions */ }
 
-            // Fallback to window.name if localStorage is blocked or cleared by iframe sandbox
-            if (!parsed && window.name && window.name.startsWith('MLBB_STATE:')) {
+            if (!parsed && window.name && window.name.startsWith('MLBB_SE:')) {
                 try {
-                    parsed = JSON.parse(window.name.slice('MLBB_STATE:'.length));
+                    parsed = JSON.parse(window.name.slice('MLBB_SE:'.length));
                 } catch (e) { /* ignore parse errors */ }
             }
 
-            if (parsed && parsed.teams && parsed.rr) {
-                // Ensure Finals matches Bo5 configuration if loading older saved state
-                if (parsed.finals) {
-                    parsed.finals.maxGames = 5;
-                    while (parsed.finals.games.length < 5) {
-                        parsed.finals.games.push({
-                            winner: '',
-                            duration: '',
-                            t1Kills: 0, t2Kills: 0,
-                            t1Gold: 0, t2Gold: 0,
-                            t1Towers: 0, t2Towers: 0,
-                            t1Objectives: 0, t2Objectives: 0
-                        });
-                    }
-                }
+            if (parsed && Array.isArray(parsed.teams) && parsed.teams.length >= 2 && parsed.matches) {
                 return parsed;
             }
-            return defaultState();
+            return createDefaultState(4);
         }
 
         function saveState() {
             const serialized = JSON.stringify(state);
             try {
                 localStorage.setItem(STORAGE_KEY, serialized);
-            } catch (e) { /* ignore storage quota/sandbox issues */ }
+            } catch (e) { /* ignore */ }
             try {
-                window.name = 'MLBB_STATE:' + serialized;
-            } catch (e) { /* ignore window.name errors */ }
+                window.name = 'MLBB_SE:' + serialized;
+            } catch (e) { /* ignore */ }
         }
 
         window.addEventListener('beforeunload', saveState);
         window.addEventListener('pagehide', saveState);
 
+        /**
+         * Standard tournament seeding order for bracket size B (power of 2)
+         * e.g., B=4 -> [1, 4, 2, 3]; B=8 -> [1, 8, 4, 5, 2, 7, 3, 6]
+         */
+        function getStandardSeedOrder(bracketSize) {
+            let seeds = [1, 2];
+            while (seeds.length < bracketSize) {
+                const nextSum = seeds.length * 2 + 1;
+                const next = [];
+                for (let i = 0; i < seeds.length; i++) {
+                    next.push(seeds[i]);
+                    next.push(nextSum - seeds[i]);
+                }
+                seeds = next;
+            }
+            return seeds;
+        }
+
+        function getRoundLabel(roundIdx, totalRounds) {
+            const roundsFromEnd = totalRounds - 1 - roundIdx;
+            if (roundsFromEnd === 0) return 'Grand Finals (Bo5)';
+            if (roundsFromEnd === 1) return 'Semifinals (Bo3)';
+            if (roundsFromEnd === 2) return 'Quarterfinals (Bo3)';
+            return `Round ${roundIdx + 1} (Bo3)`;
+        }
+
         function parseDurationToSeconds(str) {
             if (!str) return 0;
-            const cleaned = String(str).trim();
-            if (!cleaned) return 0;
-            if (cleaned.includes(':')) {
-                const parts = cleaned.split(':');
+            const clean = String(str).trim();
+            if (!clean) return 0;
+            if (clean.includes(':')) {
+                const parts = clean.split(':');
                 const mins = parseInt(parts[0], 10) || 0;
                 const secs = parseInt(parts[1], 10) || 0;
                 return Math.max(0, mins * 60 + secs);
             }
-            const num = parseInt(cleaned, 10);
+            const num = parseInt(clean, 10);
             return isNaN(num) ? 0 : Math.max(0, num * 60);
         }
 
         function formatSeconds(totalSec) {
-            const sec = Math.max(0, Math.floor(totalSec || 0));
-            const m = Math.floor(sec / 60);
-            const s = sec % 60;
-            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            if (!totalSec || totalSec <= 0 || totalSec === Infinity) return '00:00';
+            const mins = Math.floor(totalSec / 60);
+            const secs = totalSec % 60;
+            return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
         }
 
         /**
-         * Evaluates a single Bo3 or Bo5 series from its raw game rows.
-         * Automatically locks subsequent games once a team reaches the win threshold.
+         * Evaluates a single match series (Bo3 or Bo5)
          */
-        function evaluateSeries(series) {
-            const winTarget = Math.ceil(series.maxGames / 2);
+        function evaluateSeries(matchRecord, maxGames) {
+            const winTarget = Math.ceil(maxGames / 2); // 2 for Bo3, 3 for Bo5
             let t1Wins = 0, t2Wins = 0;
             let t1Kills = 0, t2Kills = 0;
+            let t1Deaths = 0, t2Deaths = 0;
             let t1Gold = 0, t2Gold = 0;
             let t1Towers = 0, t2Towers = 0;
-            let t1Obj = 0, t2Obj = 0;
+            let t1Lord = 0, t2Lord = 0;
+            let t1Turtle = 0, t2Turtle = 0;
             let t1WinTime = 0, t2WinTime = 0;
-            let seriesWinner = '';
+            let t1Fastest = Infinity, t2Fastest = Infinity;
+            let t1FastBonuses = 0, t2FastBonuses = 0;
 
-            const evaluatedGames = series.games.map((g) => {
-                const alreadyClinched = t1Wins >= winTarget || t2Wins >= winTarget;
-                const disabled = alreadyClinched;
-                const effectiveWinner = disabled ? '' : g.winner;
+            const games = matchRecord.games.slice(0, maxGames);
+            const evaluatedGames = games.map((g) => {
+                const disabled = t1Wins >= winTarget || t2Wins >= winTarget;
+                const durSec = parseDurationToSeconds(g.duration);
 
                 if (!disabled) {
-                    const durSec = parseDurationToSeconds(g.duration);
                     t1Kills += g.t1Kills;
                     t2Kills += g.t2Kills;
+                    t1Deaths += g.t1Deaths;
+                    t2Deaths += g.t2Deaths;
                     t1Gold += g.t1Gold;
                     t2Gold += g.t2Gold;
                     t1Towers += g.t1Towers;
                     t2Towers += g.t2Towers;
-                    t1Obj += g.t1Objectives;
-                    t2Obj += g.t2Objectives;
+                    t1Lord += g.t1Lord;
+                    t2Lord += g.t2Lord;
+                    t1Turtle += g.t1Turtle;
+                    t2Turtle += g.t2Turtle;
 
-                    if (effectiveWinner === '1') {
+                    if (g.winner === '1') {
                         t1Wins++;
-                        t1WinTime += durSec;
-                    } else if (effectiveWinner === '2') {
+                        if (durSec > 0) {
+                            t1WinTime += durSec;
+                            if (durSec < t1Fastest) t1Fastest = durSec;
+                            if (durSec < 15 * 60) t1FastBonuses++;
+                        }
+                    } else if (g.winner === '2') {
                         t2Wins++;
-                        t2WinTime += durSec;
+                        if (durSec > 0) {
+                            t2WinTime += durSec;
+                            if (durSec < t2Fastest) t2Fastest = durSec;
+                            if (durSec < 15 * 60) t2FastBonuses++;
+                        }
                     }
                 }
-
-                return { ...g, disabled, effectiveWinner };
+                return { ...g, disabled, durSec };
             });
 
+            let seriesWinner = '';
             if (t1Wins >= winTarget) seriesWinner = '1';
             else if (t2Wins >= winTarget) seriesWinner = '2';
 
             return {
                 t1Wins, t2Wins,
                 t1Kills, t2Kills,
+                t1Deaths, t2Deaths,
                 t1Gold, t2Gold,
                 t1Towers, t2Towers,
-                t1Obj, t2Obj,
+                t1Lord, t2Lord,
+                t1Turtle, t2Turtle,
                 t1WinTime, t2WinTime,
+                t1Fastest, t2Fastest,
+                t1FastBonuses, t2FastBonuses,
                 seriesWinner,
                 evaluatedGames
             };
         }
 
         /**
-         * Master Recalculation Loop
-         * Computes standings, tiebreakers, round-robin cards, and grand finals seeding.
+         * Builds the full single-elimination bracket structure, propagates BYEs and match winners,
+         * and aggregates Statistical Points across all rounds.
          */
-        function recalculate() {
-            state.teams.A = document.getElementById('nameA').value.trim() || 'Team A';
-            state.teams.B = document.getElementById('nameB').value.trim() || 'Team B';
-            state.teams.C = document.getElementById('nameC').value.trim() || 'Team C';
-            saveState();
+        function buildAndEvaluateBracket() {
+            const n = state.teams.length;
+            const totalRounds = Math.ceil(Math.log2(n));
+            const bracketSize = Math.pow(2, totalRounds);
+            const byeCount = bracketSize - n;
+            const seedOrder = getStandardSeedOrder(bracketSize);
 
-            const stats = {
-                A: { key: 'A', name: state.teams.A, seriesW: 0, seriesL: 0, gamesW: 0, gamesL: 0, points: 0, kills: 0, gold: 0, towers: 0, obj: 0, winTime: 0, h2h: {} },
-                B: { key: 'B', name: state.teams.B, seriesW: 0, seriesL: 0, gamesW: 0, gamesL: 0, points: 0, kills: 0, gold: 0, towers: 0, obj: 0, winTime: 0, h2h: {} },
-                C: { key: 'C', name: state.teams.C, seriesW: 0, seriesL: 0, gamesW: 0, gamesL: 0, points: 0, kills: 0, gold: 0, towers: 0, obj: 0, winTime: 0, h2h: {} }
-            };
-
-            state.rr.forEach((series) => {
-                const ev = evaluateSeries(series);
-                const t1 = stats[series.t1];
-                const t2 = stats[series.t2];
-
-                t1.gamesW += ev.t1Wins;
-                t1.gamesL += ev.t2Wins;
-                t1.kills += ev.t1Kills;
-                t1.gold += ev.t1Gold;
-                t1.towers += ev.t1Towers;
-                t1.obj += ev.t1Obj;
-                t1.winTime += ev.t1WinTime;
-
-                t2.gamesW += ev.t2Wins;
-                t2.gamesL += ev.t1Wins;
-                t2.kills += ev.t2Kills;
-                t2.gold += ev.t2Gold;
-                t2.towers += ev.t2Towers;
-                t2.obj += ev.t2Obj;
-                t2.winTime += ev.t2WinTime;
-
-                if (ev.seriesWinner === '1') {
-                    t1.seriesW++;
-                    t2.seriesL++;
-                    t1.h2h[series.t2] = 1;
-                    t2.h2h[series.t1] = -1;
-                    if (ev.t2Wins === 0) {
-                        t1.points += 3;
-                    } else {
-                        t1.points += 2;
-                        t2.points += 1;
-                    }
-                } else if (ev.seriesWinner === '2') {
-                    t2.seriesW++;
-                    t1.seriesL++;
-                    t2.h2h[series.t1] = 1;
-                    t1.h2h[series.t2] = -1;
-                    if (ev.t1Wins === 0) {
-                        t2.points += 3;
-                    } else {
-                        t2.points += 2;
-                        t1.points += 1;
-                    }
-                }
+            // Map team by seed (1-indexed)
+            const teamBySeed = {};
+            state.teams.forEach((t, idx) => {
+                t.seed = idx + 1;
+                teamBySeed[t.seed] = t;
             });
 
-            const ranked = Object.values(stats).sort((a, b) => {
-                if (b.points !== a.points) return b.points - a.points;
-                const netA = a.gamesW - a.gamesL;
-                const netB = b.gamesW - b.gamesL;
-                if (netB !== netA) return netB - netA;
+            // Initialize cumulative stats per team ID
+            const statsById = {};
+            state.teams.forEach((t) => {
+                statsById[t.id] = {
+                    id: t.id,
+                    seed: t.seed,
+                    name: t.name,
+                    status: 'ACTIVE',
+                    seriesW: 0,
+                    seriesL: 0,
+                    gamesW: 0,
+                    gamesL: 0,
+                    kills: 0,
+                    deaths: 0,
+                    gold: 0,
+                    towers: 0,
+                    lord: 0,
+                    turtle: 0,
+                    totalWinTime: 0,
+                    fastestWin: Infinity,
+                    fastBonuses: 0,
+                    statPoints: 0
+                };
+            });
 
-                // Head-to-head applies if only 2 teams share this exact points & net games tier
-                const sameTierCount = Object.values(stats).filter(
-                    t => t.points === a.points && (t.gamesW - t.gamesL) === netA
-                ).length;
-                if (sameTierCount === 2 && a.h2h[b.key]) {
-                    return -a.h2h[b.key];
+            const rounds = [];
+
+            for (let r = 0; r < totalRounds; r++) {
+                const isGrandFinals = (r === totalRounds - 1);
+                const maxGames = isGrandFinals ? 5 : 3;
+                const numMatches = bracketSize / Math.pow(2, r + 1);
+                const roundMatches = [];
+
+                for (let m = 0; m < numMatches; m++) {
+                    const matchId = `R${r + 1}_M${m + 1}`;
+                    let slot1 = null; // { type: 'TEAM', team } | { type: 'BYE' } | { type: 'TBD', label }
+                    let slot2 = null;
+
+                    if (r === 0) {
+                        const s1 = seedOrder[m * 2];
+                        const s2 = seedOrder[m * 2 + 1];
+                        slot1 = teamBySeed[s1] ? { type: 'TEAM', team: teamBySeed[s1] } : { type: 'BYE' };
+                        slot2 = teamBySeed[s2] ? { type: 'TEAM', team: teamBySeed[s2] } : { type: 'BYE' };
+                    } else {
+                        const prev1 = rounds[r - 1].matches[m * 2];
+                        const prev2 = rounds[r - 1].matches[m * 2 + 1];
+
+                        slot1 = prev1.winnerTeam
+                            ? { type: 'TEAM', team: prev1.winnerTeam }
+                            : { type: 'TBD', label: `Winner ${prev1.code}` };
+
+                        slot2 = prev2.winnerTeam
+                            ? { type: 'TEAM', team: prev2.winnerTeam }
+                            : { type: 'TBD', label: `Winner ${prev2.code}` };
+                    }
+
+                    // Ensure match record exists in state
+                    if (!state.matches[matchId]) {
+                        state.matches[matchId] = { games: [] };
+                    }
+                    while (state.matches[matchId].games.length < 5) {
+                        state.matches[matchId].games.push(createEmptyGame());
+                    }
+
+                    const isByeMatch = (slot1.type === 'BYE' || slot2.type === 'BYE');
+                    const isPlayable = (slot1.type === 'TEAM' && slot2.type === 'TEAM');
+
+                    let evalRes = evaluateSeries(state.matches[matchId], maxGames);
+                    let winnerTeam = null;
+                    let loserTeam = null;
+
+                    if (isByeMatch) {
+                        if (slot1.type === 'TEAM') winnerTeam = slot1.team;
+                        else if (slot2.type === 'TEAM') winnerTeam = slot2.team;
+                    } else if (isPlayable) {
+                        const t1Stats = statsById[slot1.team.id];
+                        const t2Stats = statsById[slot2.team.id];
+
+                        t1Stats.gamesW += evalRes.t1Wins;
+                        t1Stats.gamesL += evalRes.t2Wins;
+                        t1Stats.kills += evalRes.t1Kills;
+                        t1Stats.deaths += evalRes.t1Deaths;
+                        t1Stats.gold += evalRes.t1Gold;
+                        t1Stats.towers += evalRes.t1Towers;
+                        t1Stats.lord += evalRes.t1Lord;
+                        t1Stats.turtle += evalRes.t1Turtle;
+                        t1Stats.totalWinTime += evalRes.t1WinTime;
+                        if (evalRes.t1Fastest < t1Stats.fastestWin) t1Stats.fastestWin = evalRes.t1Fastest;
+                        t1Stats.fastBonuses += evalRes.t1FastBonuses;
+
+                        t2Stats.gamesW += evalRes.t2Wins;
+                        t2Stats.gamesL += evalRes.t1Wins;
+                        t2Stats.kills += evalRes.t2Kills;
+                        t2Stats.deaths += evalRes.t2Deaths;
+                        t2Stats.gold += evalRes.t2Gold;
+                        t2Stats.towers += evalRes.t2Towers;
+                        t2Stats.lord += evalRes.t2Lord;
+                        t2Stats.turtle += evalRes.t2Turtle;
+                        t2Stats.totalWinTime += evalRes.t2WinTime;
+                        if (evalRes.t2Fastest < t2Stats.fastestWin) t2Stats.fastestWin = evalRes.t2Fastest;
+                        t2Stats.fastBonuses += evalRes.t2FastBonuses;
+
+                        if (evalRes.seriesWinner === '1') {
+                            winnerTeam = slot1.team;
+                            loserTeam = slot2.team;
+                            t1Stats.seriesW++;
+                            t2Stats.seriesL++;
+                            t2Stats.status = 'ELIMINATED';
+                            if (isGrandFinals) t1Stats.status = 'CHAMPION';
+                        } else if (evalRes.seriesWinner === '2') {
+                            winnerTeam = slot2.team;
+                            loserTeam = slot1.team;
+                            t2Stats.seriesW++;
+                            t1Stats.seriesL++;
+                            t1Stats.status = 'ELIMINATED';
+                            if (isGrandFinals) t2Stats.status = 'CHAMPION';
+                        }
+                    }
+
+                    roundMatches.push({
+                        matchId,
+                        code: `R${r + 1}-M${m + 1}`,
+                        roundIdx: r,
+                        isGrandFinals,
+                        maxGames,
+                        slot1,
+                        slot2,
+                        isByeMatch,
+                        isPlayable,
+                        evalRes,
+                        winnerTeam,
+                        loserTeam
+                    });
                 }
 
-                // Shortest total win duration (only when both teams have recorded win time)
-                if (a.winTime !== b.winTime) {
-                    if (a.winTime === 0) return 1;
-                    if (b.winTime === 0) return -1;
-                    return a.winTime - b.winTime;
-                }
+                rounds.push({
+                    roundIdx: r,
+                    label: getRoundLabel(r, totalRounds),
+                    isGrandFinals,
+                    matches: roundMatches
+                });
+            }
 
-                if (b.towers !== a.towers) return b.towers - a.towers;
+            // Compute Statistical Points for every team
+            const statLeaderboard = Object.values(statsById).map((st) => {
+                const rawPts =
+                    (st.gamesW * 100) +
+                    (st.seriesW * 50) +
+                    (st.kills * 3) -
+                    (st.deaths * 1) +
+                    (st.towers * 10) +
+                    (st.lord * 15) +
+                    (st.turtle * 8) +
+                    Math.floor(st.gold / 2000) +
+                    (st.fastBonuses * 25);
+
+                st.statPoints = Math.max(0, rawPts);
+                return st;
+            }).sort((a, b) => {
+                if (b.statPoints !== a.statPoints) return b.statPoints - a.statPoints;
+                if (b.gamesW !== a.gamesW) return b.gamesW - a.gamesW;
+                if (a.fastestWin !== b.fastestWin) return a.fastestWin - b.fastestWin;
                 return b.gold - a.gold;
             });
 
-            renderStandings(ranked);
-            renderRoundRobin();
-            renderFinals(ranked[0], ranked[1]);
+            const grandFinalsMatch = rounds[rounds.length - 1].matches[0];
+            const champion = grandFinalsMatch ? grandFinalsMatch.winnerTeam : null;
+
+            return {
+                n,
+                totalRounds,
+                bracketSize,
+                byeCount,
+                rounds,
+                statLeaderboard,
+                champion
+            };
         }
 
-        function renderStandings(ranked) {
-            const tbody = document.getElementById('standingsBody');
-            tbody.innerHTML = ranked.map((t, idx) => {
-                const net = t.gamesW - t.gamesL;
-                const netLabel = net > 0 ? `+${net}` : `${net}`;
-                const statusLabel = idx < 2 ? 'ADVANCES (FINALS)' : 'ELIMINATED';
+        /**
+         * Master Recalculate & Render
+         */
+        function recalculate() {
+            saveState();
+            const data = buildAndEvaluateBracket();
+
+            document.getElementById('bracketMetaBadge').textContent =
+                `${data.n} Teams | ${data.totalRounds} Round${data.totalRounds > 1 ? 's' : ''} | ${data.byeCount} BYE${data.byeCount === 1 ? '' : 's'}`;
+
+            const champBanner = document.getElementById('championBanner');
+            if (data.champion) {
+                champBanner.textContent = `CHAMPION: #${data.champion.seed} ${data.champion.name}`;
+                champBanner.classList.add('done');
+            } else {
+                champBanner.textContent = 'CHAMPION: TBD';
+                champBanner.classList.remove('done');
+            }
+
+            renderStatsTable(data.statLeaderboard);
+            renderBracketTree(data.rounds);
+            renderMatchLogs(data.rounds);
+        }
+
+        function renderTeamInputs() {
+            const grid = document.getElementById('teamInputsGrid');
+            document.getElementById('teamCountInput').value = state.teams.length;
+            grid.innerHTML = state.teams.map((t, idx) => `
+                <div class="team-item">
+                    <span class="seed-tag">SEED #${idx + 1}</span>
+                    <input type="text" value="${escapeHtml(t.name)}" placeholder="Team ${idx + 1}"
+                        oninput="updateTeamName(${idx}, this.value)">
+                </div>
+            `).join('');
+        }
+
+        function updateTeamName(idx, val) {
+            state.teams[idx].name = val.trim() || `Team ${idx + 1}`;
+            recalculate();
+        }
+
+        function applyTeamCount() {
+            const rawVal = parseInt(document.getElementById('teamCountInput').value, 10);
+            const count = Math.min(16, Math.max(2, isNaN(rawVal) ? 4 : rawVal));
+            document.getElementById('teamCountInput').value = count;
+
+            const updatedTeams = [];
+            for (let i = 0; i < count; i++) {
+                if (state.teams[i]) {
+                    updatedTeams.push({
+                        id: state.teams[i].id,
+                        seed: i + 1,
+                        name: state.teams[i].name
+                    });
+                } else {
+                    updatedTeams.push({
+                        id: `T${i + 1}_${Date.now().toString(36).slice(-3)}`,
+                        seed: i + 1,
+                        name: DEFAULT_TEAM_NAMES[i] || `Team ${i + 1}`
+                    });
+                }
+            }
+            state.teams = updatedTeams;
+            state.teamCount = count;
+            state.matches = {};
+            renderTeamInputs();
+            recalculate();
+        }
+
+        function renderStatsTable(leaderboard) {
+            const tbody = document.getElementById('statsBody');
+            tbody.innerHTML = leaderboard.map((st, idx) => {
+                const fastStr = st.fastestWin === Infinity ? '--:--' : formatSeconds(st.fastestWin);
+                const totalWinStr = formatSeconds(st.totalWinTime);
                 return `
                     <tr>
                         <td class="center bold">#${idx + 1}</td>
-                        <td class="bold">${escapeHtml(t.name)}</td>
-                        <td class="center">${t.seriesW}–${t.seriesL}</td>
-                        <td class="center">${t.gamesW}–${t.gamesL}</td>
-                        <td class="center">${netLabel}</td>
-                        <td class="center bold">${t.points}</td>
-                        <td class="num">${t.kills}</td>
-                        <td class="num">${t.gold.toLocaleString()}</td>
-                        <td class="center">${t.towers}</td>
-                        <td class="center">${t.obj}</td>
-                        <td class="center">${formatSeconds(t.winTime)}</td>
-                        <td class="center bold">${statusLabel}</td>
+                        <td class="center">Seed #${st.seed}</td>
+                        <td class="bold">${escapeHtml(st.name)}</td>
+                        <td class="center bold">${st.status}</td>
+                        <td class="center">${st.seriesW}–${st.seriesL}</td>
+                        <td class="center">${st.gamesW}–${st.gamesL}</td>
+                        <td class="center bold">${st.statPoints.toLocaleString()}</td>
+                        <td class="num">${st.kills}</td>
+                        <td class="num">${st.deaths}</td>
+                        <td class="num">${st.towers}</td>
+                        <td class="center">${st.lord} / ${st.turtle}</td>
+                        <td class="num">${st.gold.toLocaleString()}</td>
+                        <td class="center">${fastStr} / ${totalWinStr}</td>
                     </tr>
                 `;
             }).join('');
         }
 
-        function renderRoundRobin() {
-            const container = document.getElementById('rrContainer');
-            container.innerHTML = '';
+        function renderBracketTree(rounds) {
+            const board = document.getElementById('bracketTree');
+            board.innerHTML = rounds.map((round) => `
+                <div class="bracket-col">
+                    <div class="bracket-col-title">${escapeHtml(round.label)}</div>
+                    <div class="bracket-col-matches">
+                        ${round.matches.map((m) => {
+                            const s1Win = m.winnerTeam && m.slot1.type === 'TEAM' && m.winnerTeam.id === m.slot1.team.id;
+                            const s2Win = m.winnerTeam && m.slot2.type === 'TEAM' && m.winnerTeam.id === m.slot2.team.id;
 
-            state.rr.forEach((series, sIdx) => {
-                const ev = evaluateSeries(series);
-                const name1 = state.teams[series.t1];
-                const name2 = state.teams[series.t2];
-                const isDone = ev.seriesWinner !== '';
-                const statusText = isDone
-                    ? `FINAL: ${ev.seriesWinner === '1' ? name1 : name2} (${ev.t1Wins}–${ev.t2Wins})`
-                    : `IN PROGRESS (${ev.t1Wins}–${ev.t2Wins})`;
+                            const s1Label = m.slot1.type === 'TEAM'
+                                ? `#${m.slot1.team.seed} ${m.slot1.team.name}`
+                                : (m.slot1.type === 'BYE' ? 'BYE' : m.slot1.label);
 
-                const card = document.createElement('div');
-                card.className = 'series-card';
-                card.innerHTML = `
+                            const s2Label = m.slot2.type === 'TEAM'
+                                ? `#${m.slot2.team.seed} ${m.slot2.team.name}`
+                                : (m.slot2.type === 'BYE' ? 'BYE' : m.slot2.label);
+
+                            const s1Score = m.isByeMatch
+                                ? (m.slot1.type === 'TEAM' ? 'ADV' : '-')
+                                : (m.isPlayable ? m.evalRes.t1Wins : '-');
+
+                            const s2Score = m.isByeMatch
+                                ? (m.slot2.type === 'TEAM' ? 'ADV' : '-')
+                                : (m.isPlayable ? m.evalRes.t2Wins : '-');
+
+                            return `
+                                <div class="b-match">
+                                    <div class="b-match-head">
+                                        <span>${m.code}</span>
+                                        <span>${m.isByeMatch ? 'AUTO BYE' : (m.isGrandFinals ? 'BO5' : 'BO3')}</span>
+                                    </div>
+                                    <div class="b-slot ${s1Win ? 'winner' : ''} ${m.slot1.type === 'BYE' ? 'bye' : ''}">
+                                        <span class="b-name">${escapeHtml(s1Label)}</span>
+                                        <span class="b-score">${s1Score}</span>
+                                    </div>
+                                    <div class="b-slot ${s2Win ? 'winner' : ''} ${m.slot2.type === 'BYE' ? 'bye' : ''}">
+                                        <span class="b-name">${escapeHtml(s2Label)}</span>
+                                        <span class="b-score">${s2Score}</span>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderMatchLogs(rounds) {
+            const container = document.getElementById('matchLogsContainer');
+            container.innerHTML = rounds.map((round) => {
+                const playableMatches = round.matches.filter(m => !m.isByeMatch);
+                const byeMatches = round.matches.filter(m => m.isByeMatch);
+
+                return `
+                    <div class="round-group">
+                        <div class="round-banner">
+                            <span>${escapeHtml(round.label)}</span>
+                            <span>${round.isGrandFinals ? 'First to 3 Game Wins' : 'First to 2 Game Wins'}</span>
+                        </div>
+                        ${byeMatches.length > 0 ? `
+                            <div class="note" style="margin-top: 0; margin-bottom: 12px;">
+                                Round 1 BYEs (Auto-Advanced): ${byeMatches.map(bm =>
+                                    bm.winnerTeam ? `#${bm.winnerTeam.seed} ${escapeHtml(bm.winnerTeam.name)}` : ''
+                                ).filter(Boolean).join(' | ')}
+                            </div>
+                        ` : ''}
+                        <div class="series-grid">
+                            ${playableMatches.map((m) => renderMatchCard(m)).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderMatchCard(m) {
+            const name1 = m.slot1.type === 'TEAM' ? `#${m.slot1.team.seed} ${m.slot1.team.name}` : m.slot1.label;
+            const name2 = m.slot2.type === 'TEAM' ? `#${m.slot2.team.seed} ${m.slot2.team.name}` : m.slot2.label;
+
+            if (!m.isPlayable) {
+                return `
+                    <div class="series-card" style="opacity: 0.65;">
+                        <div class="series-top" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0;">
+                            <strong>${m.code}: ${escapeHtml(name1)} vs ${escapeHtml(name2)}</strong>
+                            <span class="score-pill">Awaiting Previous Round Winner</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const ev = m.evalRes;
+            const isDone = ev.seriesWinner !== '';
+            const statusText = isDone
+                ? `WINNER: ${ev.seriesWinner === '1' ? name1 : name2} (${ev.t1Wins}–${ev.t2Wins})`
+                : `IN PROGRESS (${ev.t1Wins}–${ev.t2Wins})`;
+
+            return `
+                <div class="series-card">
                     <div class="series-top">
-                        <strong>SERIES ${sIdx + 1}: ${escapeHtml(name1)} vs ${escapeHtml(name2)}</strong>
+                        <strong>${m.code}: ${escapeHtml(name1)} vs ${escapeHtml(name2)}</strong>
                         <span class="score-pill ${isDone ? 'done' : ''}">${escapeHtml(statusText)}</span>
                     </div>
                     <div class="table-wrap">
@@ -766,93 +1210,71 @@
                                     <th>Game</th>
                                     <th>Winner</th>
                                     <th>Duration (MM:SS)</th>
-                                    <th class="num">${escapeHtml(name1)} Kills</th>
-                                    <th class="num">${escapeHtml(name2)} Kills</th>
-                                    <th class="num">${escapeHtml(name1)} Gold</th>
-                                    <th class="num">${escapeHtml(name2)} Gold</th>
-                                    <th class="num">${escapeHtml(name1)} Towers</th>
-                                    <th class="num">${escapeHtml(name2)} Towers</th>
-                                    <th class="num">${escapeHtml(name1)} Lord/Turtle</th>
-                                    <th class="num">${escapeHtml(name2)} Lord/Turtle</th>
+                                    <th class="num">${escapeHtml(m.slot1.team.name)} K</th>
+                                    <th class="num">${escapeHtml(m.slot1.team.name)} D</th>
+                                    <th class="num">${escapeHtml(m.slot2.team.name)} K</th>
+                                    <th class="num">${escapeHtml(m.slot2.team.name)} D</th>
+                                    <th class="num">${escapeHtml(m.slot1.team.name)} Gold</th>
+                                    <th class="num">${escapeHtml(m.slot2.team.name)} Gold</th>
+                                    <th class="num">${escapeHtml(m.slot1.team.name)} Twr</th>
+                                    <th class="num">${escapeHtml(m.slot2.team.name)} Twr</th>
+                                    <th class="num">${escapeHtml(m.slot1.team.name)} L/T</th>
+                                    <th class="num">${escapeHtml(m.slot2.team.name)} L/T</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${ev.evaluatedGames.map((g, gIdx) => renderGameRow('rr', sIdx, gIdx, g, name1, name2)).join('')}
+                                ${ev.evaluatedGames.map((g, gIdx) => `
+                                    <tr class="${g.disabled ? 'game-disabled' : ''}">
+                                        <td class="bold">Game ${gIdx + 1}</td>
+                                        <td>
+                                            <select onchange="updateGameField('${m.matchId}', ${gIdx}, 'winner', this.value, true)">
+                                                <option value="" ${g.winner === '' ? 'selected' : ''}>-- Select --</option>
+                                                <option value="1" ${g.winner === '1' ? 'selected' : ''}>${escapeHtml(m.slot1.team.name)}</option>
+                                                <option value="2" ${g.winner === '2' ? 'selected' : ''}>${escapeHtml(m.slot2.team.name)}</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input type="text" placeholder="14:30" value="${escapeHtml(g.duration)}"
+                                                oninput="updateGameField('${m.matchId}', ${gIdx}, 'duration', this.value, false)"
+                                                onchange="updateGameField('${m.matchId}', ${gIdx}, 'duration', this.value, true)">
+                                        </td>
+                                        <td><input type="number" inputmode="numeric" min="0" value="${g.t1Kills}" oninput="updateGameField('${m.matchId}', ${gIdx}, 't1Kills', this.value, false)" onchange="updateGameField('${m.matchId}', ${gIdx}, 't1Kills', this.value, true)"></td>
+                                        <td><input type="number" inputmode="numeric" min="0" value="${g.t1Deaths}" oninput="updateGameField('${m.matchId}', ${gIdx}, 't1Deaths', this.value, false)" onchange="updateGameField('${m.matchId}', ${gIdx}, 't1Deaths', this.value, true)"></td>
+                                        <td><input type="number" inputmode="numeric" min="0" value="${g.t2Kills}" oninput="updateGameField('${m.matchId}', ${gIdx}, 't2Kills', this.value, false)" onchange="updateGameField('${m.matchId}', ${gIdx}, 't2Kills', this.value, true)"></td>
+                                        <td><input type="number" inputmode="numeric" min="0" value="${g.t2Deaths}" oninput="updateGameField('${m.matchId}', ${gIdx}, 't2Deaths', this.value, false)" onchange="updateGameField('${m.matchId}', ${gIdx}, 't2Deaths', this.value, true)"></td>
+                                        <td><input type="number" inputmode="numeric" min="0" value="${g.t1Gold}" oninput="updateGameField('${m.matchId}', ${gIdx}, 't1Gold', this.value, false)" onchange="updateGameField('${m.matchId}', ${gIdx}, 't1Gold', this.value, true)"></td>
+                                        <td><input type="number" inputmode="numeric" min="0" value="${g.t2Gold}" oninput="updateGameField('${m.matchId}', ${gIdx}, 't2Gold', this.value, false)" onchange="updateGameField('${m.matchId}', ${gIdx}, 't2Gold', this.value, true)"></td>
+                                        <td><input type="number" inputmode="numeric" min="0" max="9" value="${g.t1Towers}" oninput="updateGameField('${m.matchId}', ${gIdx}, 't1Towers', this.value, false)" onchange="updateGameField('${m.matchId}', ${gIdx}, 't1Towers', this.value, true)"></td>
+                                        <td><input type="number" inputmode="numeric" min="0" max="9" value="${g.t2Towers}" oninput="updateGameField('${m.matchId}', ${gIdx}, 't2Towers', this.value, false)" onchange="updateGameField('${m.matchId}', ${gIdx}, 't2Towers', this.value, true)"></td>
+                                        <td>
+                                            <div style="display:flex; gap:2px;">
+                                                <input type="number" inputmode="numeric" min="0" title="Lords" value="${g.t1Lord}" style="min-width:34px;" oninput="updateGameField('${m.matchId}', ${gIdx}, 't1Lord', this.value, false)" onchange="updateGameField('${m.matchId}', ${gIdx}, 't1Lord', this.value, true)">
+                                                <span>/</span>
+                                                <input type="number" inputmode="numeric" min="0" title="Turtles" value="${g.t1Turtle}" style="min-width:34px;" oninput="updateGameField('${m.matchId}', ${gIdx}, 't1Turtle', this.value, false)" onchange="updateGameField('${m.matchId}', ${gIdx}, 't1Turtle', this.value, true)">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div style="display:flex; gap:2px;">
+                                                <input type="number" inputmode="numeric" min="0" title="Lords" value="${g.t2Lord}" style="min-width:34px;" oninput="updateGameField('${m.matchId}', ${gIdx}, 't2Lord', this.value, false)" onchange="updateGameField('${m.matchId}', ${gIdx}, 't2Lord', this.value, true)">
+                                                <span>/</span>
+                                                <input type="number" inputmode="numeric" min="0" title="Turtles" value="${g.t2Turtle}" style="min-width:34px;" oninput="updateGameField('${m.matchId}', ${gIdx}, 't2Turtle', this.value, false)" onchange="updateGameField('${m.matchId}', ${gIdx}, 't2Turtle', this.value, true)">
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `).join('')}
                                 <tr style="background: var(--muted); font-weight: 700;">
                                     <td colspan="2">SERIES TOTALS</td>
-                                    <td class="center">Win Time: ${formatSeconds(ev.t1WinTime)} / ${formatSeconds(ev.t2WinTime)}</td>
+                                    <td>Win: ${formatSeconds(ev.t1WinTime)} / ${formatSeconds(ev.t2WinTime)}</td>
                                     <td class="num">${ev.t1Kills}</td>
+                                    <td class="num">${ev.t1Deaths}</td>
                                     <td class="num">${ev.t2Kills}</td>
+                                    <td class="num">${ev.t2Deaths}</td>
                                     <td class="num">${ev.t1Gold.toLocaleString()}</td>
                                     <td class="num">${ev.t2Gold.toLocaleString()}</td>
                                     <td class="num">${ev.t1Towers}</td>
                                     <td class="num">${ev.t2Towers}</td>
-                                    <td class="num">${ev.t1Obj}</td>
-                                    <td class="num">${ev.t2Obj}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        function renderFinals(seed1, seed2) {
-            const container = document.getElementById('finalsContainer');
-            const badge = document.getElementById('finalsChampionBadge');
-            const ev = evaluateSeries(state.finals);
-
-            const name1 = `Seed #1: ${seed1.name}`;
-            const name2 = `Seed #2: ${seed2.name}`;
-
-            if (ev.seriesWinner === '1') {
-                badge.textContent = `CHAMPION: ${seed1.name} (${ev.t1Wins}–${ev.t2Wins})`;
-                badge.classList.add('done');
-            } else if (ev.seriesWinner === '2') {
-                badge.textContent = `CHAMPION: ${seed2.name} (${ev.t2Wins}–${ev.t1Wins})`;
-                badge.classList.add('done');
-            } else {
-                badge.textContent = `SCORE: ${ev.t1Wins}–${ev.t2Wins}`;
-                badge.classList.remove('done');
-            }
-
-            container.innerHTML = `
-                <div class="series-card">
-                    <div class="series-top">
-                        <strong>GRAND FINALS (Bo5): ${escapeHtml(name1)} vs ${escapeHtml(name2)}</strong>
-                        <span class="subtitle">First to 3 Wins</span>
-                    </div>
-                    <div class="table-wrap">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Game</th>
-                                    <th>Winner</th>
-                                    <th>Duration (MM:SS)</th>
-                                    <th class="num">${escapeHtml(seed1.name)} Kills</th>
-                                    <th class="num">${escapeHtml(seed2.name)} Kills</th>
-                                    <th class="num">${escapeHtml(seed1.name)} Gold</th>
-                                    <th class="num">${escapeHtml(seed2.name)} Gold</th>
-                                    <th class="num">${escapeHtml(seed1.name)} Towers</th>
-                                    <th class="num">${escapeHtml(seed2.name)} Towers</th>
-                                    <th class="num">${escapeHtml(seed1.name)} Lord/Turtle</th>
-                                    <th class="num">${escapeHtml(seed2.name)} Lord/Turtle</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${ev.evaluatedGames.map((g, gIdx) => renderGameRow('finals', 0, gIdx, g, seed1.name, seed2.name)).join('')}
-                                <tr style="background: var(--muted); font-weight: 700;">
-                                    <td colspan="2">FINALS TOTALS</td>
-                                    <td class="center">Win Time: ${formatSeconds(ev.t1WinTime)} / ${formatSeconds(ev.t2WinTime)}</td>
-                                    <td class="num">${ev.t1Kills}</td>
-                                    <td class="num">${ev.t2Kills}</td>
-                                    <td class="num">${ev.t1Gold.toLocaleString()}</td>
-                                    <td class="num">${ev.t2Gold.toLocaleString()}</td>
-                                    <td class="num">${ev.t1Towers}</td>
-                                    <td class="num">${ev.t2Towers}</td>
-                                    <td class="num">${ev.t1Obj}</td>
-                                    <td class="num">${ev.t2Obj}</td>
+                                    <td class="center">${ev.t1Lord}/${ev.t1Turtle}</td>
+                                    <td class="center">${ev.t2Lord}/${ev.t2Turtle}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -861,37 +1283,17 @@
             `;
         }
 
-        function renderGameRow(stage, sIdx, gIdx, g, name1, name2) {
-            return `
-                <tr class="${g.disabled ? 'game-disabled' : ''}">
-                    <td class="bold">Game ${gIdx + 1}</td>
-                    <td>
-                        <select onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 'winner', this.value, true)">
-                            <option value="" ${g.winner === '' ? 'selected' : ''}>--</option>
-                            <option value="1" ${g.winner === '1' ? 'selected' : ''}>${escapeHtml(name1)}</option>
-                            <option value="2" ${g.winner === '2' ? 'selected' : ''}>${escapeHtml(name2)}</option>
-                        </select>
-                    </td>
-                    <td><input type="text" inputmode="numeric" placeholder="14:30" value="${escapeHtml(g.duration)}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 'duration', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 'duration', this.value, true)"></td>
-                    <td><input type="number" inputmode="numeric" min="0" value="${g.t1Kills}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Kills', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Kills', this.value, true)"></td>
-                    <td><input type="number" inputmode="numeric" min="0" value="${g.t2Kills}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Kills', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Kills', this.value, true)"></td>
-                    <td><input type="number" inputmode="numeric" min="0" value="${g.t1Gold}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Gold', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Gold', this.value, true)"></td>
-                    <td><input type="number" inputmode="numeric" min="0" value="${g.t2Gold}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Gold', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Gold', this.value, true)"></td>
-                    <td><input type="number" inputmode="numeric" min="0" max="9" value="${g.t1Towers}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Towers', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Towers', this.value, true)"></td>
-                    <td><input type="number" inputmode="numeric" min="0" max="9" value="${g.t2Towers}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Towers', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Towers', this.value, true)"></td>
-                    <td><input type="number" inputmode="numeric" min="0" value="${g.t1Objectives}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Objectives', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Objectives', this.value, true)"></td>
-                    <td><input type="number" inputmode="numeric" min="0" value="${g.t2Objectives}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Objectives', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Objectives', this.value, true)"></td>
-                </tr>
-            `;
-        }
+        function updateGameField(matchId, gIdx, field, value, shouldRender = true) {
+            if (!state.matches[matchId]) return;
+            const game = state.matches[matchId].games[gIdx];
+            if (!game) return;
 
-        function updateGameField(stage, sIdx, gIdx, field, value, shouldRender = true) {
-            const targetSeries = stage === 'rr' ? state.rr[sIdx] : state.finals;
             if (field === 'winner' || field === 'duration') {
-                targetSeries.games[gIdx][field] = value;
+                game[field] = value;
             } else {
-                targetSeries.games[gIdx][field] = Math.max(0, parseInt(value, 10) || 0);
+                game[field] = Math.max(0, parseInt(value, 10) || 0);
             }
+
             if (shouldRender) {
                 recalculate();
             } else {
@@ -900,60 +1302,125 @@
         }
 
         /**
-         * Comprehensive CSV Export (Standings + Every Round Robin Game + Grand Finals Games)
+         * Re-seeds the Single Elimination Bracket using current Statistical Points
+         * (Highest Statistical Points = Seed #1, Second Highest = Seed #2, etc.)
+         */
+        function promptReseedByStats() {
+            const overlay = document.getElementById('modalOverlay');
+            document.getElementById('modalTitle').textContent = 'Apply Statistical Points Seeding';
+            document.getElementById('modalBody').textContent =
+                'This will reorder the teams so the team with the highest Statistical Points becomes Seed #1 (1 vs N bracket placement) and reset match slots to match the new seeding. Proceed?';
+            document.getElementById('modalActions').innerHTML = `
+                <button onclick="closeModal()">Cancel</button>
+                <button class="primary" onclick="executeReseedByStats()">Apply Seeding</button>
+            `;
+            overlay.style.display = 'flex';
+        }
+
+        function executeReseedByStats() {
+            const data = buildAndEvaluateBracket();
+            const reordered = data.statLeaderboard.map((st, idx) => ({
+                id: st.id,
+                seed: idx + 1,
+                name: st.name
+            }));
+            state.teams = reordered;
+            state.matches = {};
+            closeModal();
+            renderTeamInputs();
+            recalculate();
+        }
+
+        /**
+         * Export to CSV (Statistical Leaderboard + Bracket Summary + Detailed Per-Game Logs)
          */
         function exportCSV() {
+            const data = buildAndEvaluateBracket();
             const rows = [];
-            const csvEscape = (val) => `"${String(val).replace(/"/g, '""')}"`;
+            const esc = (val) => `"${String(val).replace(/"/g, '""')}"`;
 
-            rows.push(['MLBB TOURNAMENT AUTOMATED REPORT']);
-            rows.push(['Generated', new Date().toLocaleString()]);
+            rows.push(['MLBB SINGLE ELIMINATION TOURNAMENT REPORT (BO3 ROUNDS + BO5 GRAND FINALS)']);
+            rows.push(['Exported At', new Date().toLocaleString()]);
+            rows.push(['Competing Teams', data.n, 'Champion', data.champion ? `#${data.champion.seed} ${data.champion.name}` : 'TBD']);
             rows.push([]);
 
-            // 1. Group Standings
-            rows.push(['GROUP STAGE STANDINGS (BO3 ROUND ROBIN)']);
-            rows.push(['Seed', 'Team Name', 'Series W-L', 'Games W-L', 'Net Games', 'Points', 'Total Kills', 'Total Gold', 'Towers Destroyed', 'Lord/Turtle', 'Total Win Duration', 'Status']);
-            document.querySelectorAll('#standingsBody tr').forEach(tr => {
-                const cols = Array.from(tr.querySelectorAll('td')).map(td => csvEscape(td.innerText.trim()));
-                rows.push(cols);
+            // 1. Statistical Seed Ranking Table
+            rows.push(['01. STATISTICAL POINTS & SEED RANKING LEADERBOARD']);
+            rows.push([
+                'Stat Rank', 'Bracket Seed', 'Team Name', 'Status', 'Series W-L', 'Games W-L',
+                'Stat Points', 'Total Kills', 'Total Deaths', 'Towers Destroyed',
+                'Lords Slain', 'Turtles Slain', 'Total Gold', 'Fastest Win', 'Total Win Time'
+            ]);
+
+            data.statLeaderboard.forEach((st, idx) => {
+                rows.push([
+                    `#${idx + 1}`,
+                    `Seed #${st.seed}`,
+                    st.name,
+                    st.status,
+                    `${st.seriesW}-${st.seriesL}`,
+                    `${st.gamesW}-${st.gamesL}`,
+                    st.statPoints,
+                    st.kills,
+                    st.deaths,
+                    st.towers,
+                    st.lord,
+                    st.turtle,
+                    st.gold,
+                    st.fastestWin === Infinity ? '--:--' : formatSeconds(st.fastestWin),
+                    formatSeconds(st.totalWinTime)
+                ].map(esc));
             });
             rows.push([]);
 
-            // 2. Round Robin Game-by-Game Logs
-            rows.push(['ROUND ROBIN MATCH LOGS']);
-            rows.push(['Series', 'Game', 'Team 1', 'Team 2', 'Winner', 'Duration', 'T1 Kills', 'T2 Kills', 'T1 Gold', 'T2 Gold', 'T1 Towers', 'T2 Towers', 'T1 Objectives', 'T2 Objectives']);
-
-            state.rr.forEach((series, sIdx) => {
-                const ev = evaluateSeries(series);
-                const n1 = state.teams[series.t1];
-                const n2 = state.teams[series.t2];
-                ev.evaluatedGames.forEach((g, gIdx) => {
-                    if (!g.disabled && g.effectiveWinner) {
-                        const winName = g.effectiveWinner === '1' ? n1 : n2;
-                        rows.push([
-                            `Series ${sIdx + 1}`, `Game ${gIdx + 1}`, n1, n2, winName, g.duration || '00:00',
-                            g.t1Kills, g.t2Kills, g.t1Gold, g.t2Gold, g.t1Towers, g.t2Towers, g.t1Objectives, g.t2Objectives
-                        ].map(csvEscape));
-                    }
+            // 2. Bracket Progression Summary
+            rows.push(['02. SINGLE ELIMINATION BRACKET SUMMARY']);
+            rows.push(['Round', 'Match', 'Format', 'Slot 1', 'Slot 2', 'Series Score', 'Advancing Winner']);
+            data.rounds.forEach((round) => {
+                round.matches.forEach((m) => {
+                    const s1 = m.slot1.type === 'TEAM' ? `#${m.slot1.team.seed} ${m.slot1.team.name}` : (m.slot1.type === 'BYE' ? 'BYE' : m.slot1.label);
+                    const s2 = m.slot2.type === 'TEAM' ? `#${m.slot2.team.seed} ${m.slot2.team.name}` : (m.slot2.type === 'BYE' ? 'BYE' : m.slot2.label);
+                    const score = m.isByeMatch ? 'BYE' : `${m.evalRes.t1Wins}-${m.evalRes.t2Wins}`;
+                    const win = m.winnerTeam ? `#${m.winnerTeam.seed} ${m.winnerTeam.name}` : 'TBD';
+                    rows.push([
+                        round.label,
+                        m.code,
+                        m.isByeMatch ? 'BYE' : (m.isGrandFinals ? 'Bo5' : 'Bo3'),
+                        s1,
+                        s2,
+                        score,
+                        win
+                    ].map(esc));
                 });
             });
             rows.push([]);
 
-            // 3. Grand Finals Logs
-            rows.push(['GRAND FINALS LOGS (BO5)']);
-            const seed1Name = document.querySelector('#standingsBody tr:nth-child(1) td:nth-child(2)')?.innerText || 'Seed #1';
-            const seed2Name = document.querySelector('#standingsBody tr:nth-child(2) td:nth-child(2)')?.innerText || 'Seed #2';
-            const finalsEv = evaluateSeries(state.finals);
+            // 3. Detailed Game-by-Game Match Logs
+            rows.push(['03. DETAILED GAME-BY-GAME MATCH LOGS']);
+            rows.push([
+                'Round', 'Match', 'Game', 'Team 1', 'Team 2', 'Game Winner', 'Duration',
+                'T1 Kills', 'T1 Deaths', 'T2 Kills', 'T2 Deaths',
+                'T1 Gold', 'T2 Gold', 'T1 Towers', 'T2 Towers',
+                'T1 Lords', 'T1 Turtles', 'T2 Lords', 'T2 Turtles'
+            ]);
 
-            rows.push(['Stage', 'Game', 'Seed #1', 'Seed #2', 'Winner', 'Duration', 'S1 Kills', 'S2 Kills', 'S1 Gold', 'S2 Gold', 'S1 Towers', 'S2 Towers', 'S1 Objectives', 'S2 Objectives']);
-            finalsEv.evaluatedGames.forEach((g, gIdx) => {
-                if (!g.disabled && g.effectiveWinner) {
-                    const winName = g.effectiveWinner === '1' ? seed1Name : seed2Name;
-                    rows.push([
-                        'Grand Finals', `Game ${gIdx + 1}`, seed1Name, seed2Name, winName, g.duration || '00:00',
-                        g.t1Kills, g.t2Kills, g.t1Gold, g.t2Gold, g.t1Towers, g.t2Towers, g.t1Objectives, g.t2Objectives
-                    ].map(csvEscape));
-                }
+            data.rounds.forEach((round) => {
+                round.matches.forEach((m) => {
+                    if (!m.isPlayable) return;
+                    const t1Name = m.slot1.team.name;
+                    const t2Name = m.slot2.team.name;
+                    m.evalRes.evaluatedGames.forEach((g, gIdx) => {
+                        if (!g.disabled && (g.winner || g.duration || g.t1Kills > 0 || g.t2Kills > 0)) {
+                            const winName = g.winner === '1' ? t1Name : (g.winner === '2' ? t2Name : 'TBD');
+                            rows.push([
+                                round.label, m.code, `Game ${gIdx + 1}`, t1Name, t2Name, winName, g.duration || '00:00',
+                                g.t1Kills, g.t1Deaths, g.t2Kills, g.t2Deaths,
+                                g.t1Gold, g.t2Gold, g.t1Towers, g.t2Towers,
+                                g.t1Lord, g.t1Turtle, g.t2Lord, g.t2Turtle
+                            ].map(esc));
+                        }
+                    });
+                });
             });
 
             const csvString = rows.map(r => r.join(',')).join('\n');
@@ -961,55 +1428,96 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `mlbb_tournament_${new Date().toISOString().slice(0, 10)}.csv`;
+            a.download = `mlbb_single_elim_${data.n}teams_${new Date().toISOString().slice(0, 10)}.csv`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         }
 
-        // Demo Data for instant testing
+        /**
+         * Demo Data (6 Teams with Round 1 BYEs, Bo3 Quarterfinals & Semifinals, Bo5 Grand Finals)
+         */
         function loadDemoData() {
-            state = defaultState();
-            state.teams = { A: 'Blacklist', B: 'ECHO', C: 'ONIC PH' };
-            document.getElementById('nameA').value = state.teams.A;
-            document.getElementById('nameB').value = state.teams.B;
-            document.getElementById('nameC').value = state.teams.C;
+            state = createDefaultState(6);
+            state.teams = [
+                { id: 'T1', seed: 1, name: 'ONIC Esports' },
+                { id: 'T2', seed: 2, name: 'Team Liquid ID' },
+                { id: 'T3', seed: 3, name: 'AP.Bren' },
+                { id: 'T4', seed: 4, name: 'RRQ Hoshi' },
+                { id: 'T5', seed: 5, name: 'Selangor Red Giants' },
+                { id: 'T6', seed: 6, name: 'Blacklist International' }
+            ];
 
-            // Series 1: A beats B (2-1)
-            state.rr[0].games[0] = { winner: '1', duration: '14:20', t1Kills: 16, t2Kills: 7, t1Gold: 46200, t2Gold: 38100, t1Towers: 8, t2Towers: 2, t1Objectives: 4, t2Objectives: 1 };
-            state.rr[0].games[1] = { winner: '2', duration: '18:45', t1Kills: 11, t2Kills: 19, t1Gold: 52000, t2Gold: 61400, t1Towers: 3, t2Towers: 9, t1Objectives: 2, t2Objectives: 5 };
-            state.rr[0].games[2] = { winner: '1', duration: '13:10', t1Kills: 14, t2Kills: 4, t1Gold: 42500, t2Gold: 33000, t1Towers: 9, t2Towers: 1, t1Objectives: 4, t2Objectives: 0 };
+            // R1_M2: Seed #4 RRQ Hoshi vs Seed #5 Selangor Red Giants (Bo3 -> 1-2)
+            state.matches['R1_M2'] = {
+                games: [
+                    { winner: '1', duration: '14:12', t1Kills: 18, t2Kills: 7, t1Deaths: 7, t2Deaths: 18, t1Gold: 46200, t2Gold: 36800, t1Towers: 9, t2Towers: 2, t1Lord: 1, t2Lord: 0, t1Turtle: 3, t2Turtle: 0 },
+                    { winner: '2', duration: '16:45', t1Kills: 11, t2Kills: 21, t1Deaths: 21, t2Deaths: 11, t1Gold: 47900, t2Gold: 55400, t1Towers: 3, t2Towers: 9, t1Lord: 0, t2Lord: 2, t1Turtle: 1, t2Turtle: 2 },
+                    { winner: '2', duration: '18:20', t1Kills: 14, t2Kills: 19, t1Deaths: 19, t2Deaths: 14, t1Gold: 54100, t2Gold: 60800, t1Towers: 4, t2Towers: 8, t1Lord: 1, t2Lord: 2, t1Turtle: 1, t2Turtle: 2 },
+                    createEmptyGame(), createEmptyGame()
+                ]
+            };
 
-            // Series 2: B beats C (2-0)
-            state.rr[1].games[0] = { winner: '1', duration: '12:50', t1Kills: 18, t2Kills: 5, t1Gold: 41800, t2Gold: 32900, t1Towers: 8, t2Towers: 1, t1Objectives: 3, t2Objectives: 1 };
-            state.rr[1].games[1] = { winner: '1', duration: '15:05', t1Kills: 15, t2Kills: 9, t1Gold: 48900, t2Gold: 41200, t1Towers: 7, t2Towers: 3, t1Objectives: 4, t2Objectives: 2 };
+            // R1_M3: Seed #3 AP.Bren vs Seed #6 Blacklist International (Bo3 -> 2-0)
+            state.matches['R1_M3'] = {
+                games: [
+                    { winner: '1', duration: '13:40', t1Kills: 22, t2Kills: 8, t1Deaths: 8, t2Deaths: 22, t1Gold: 45800, t2Gold: 34900, t1Towers: 9, t2Towers: 1, t1Lord: 1, t2Lord: 0, t1Turtle: 3, t2Turtle: 0 },
+                    { winner: '1', duration: '15:18', t1Kills: 17, t2Kills: 9, t1Deaths: 9, t2Deaths: 17, t1Gold: 49300, t2Gold: 40100, t1Towers: 8, t2Towers: 2, t1Lord: 1, t2Lord: 0, t1Turtle: 2, t2Turtle: 1 },
+                    createEmptyGame(), createEmptyGame(), createEmptyGame()
+                ]
+            };
 
-            // Series 3: C beats A (2-0) -> Creates a 3-way tie at 1-1 series record!
-            state.rr[2].games[0] = { winner: '2', duration: '16:00', t1Kills: 8, t2Kills: 17, t1Gold: 45000, t2Gold: 53200, t1Towers: 2, t2Towers: 8, t1Objectives: 1, t2Objectives: 4 };
-            state.rr[2].games[1] = { winner: '2', duration: '14:15', t1Kills: 6, t2Kills: 14, t1Gold: 39400, t2Gold: 46800, t1Towers: 1, t2Towers: 9, t1Objectives: 1, t2Objectives: 4 };
+            // R2_M1 (Semifinal 1): Seed #1 ONIC Esports vs Seed #5 Selangor Red Giants (Bo3 -> 2-0)
+            state.matches['R2_M1'] = {
+                games: [
+                    { winner: '1', duration: '14:05', t1Kills: 20, t2Kills: 6, t1Deaths: 6, t2Deaths: 20, t1Gold: 47100, t2Gold: 35600, t1Towers: 9, t2Towers: 1, t1Lord: 1, t2Lord: 0, t1Turtle: 3, t2Turtle: 0 },
+                    { winner: '1', duration: '16:10', t1Kills: 19, t2Kills: 12, t1Deaths: 12, t2Deaths: 19, t1Gold: 53400, t2Gold: 45200, t1Towers: 9, t2Towers: 3, t1Lord: 2, t2Lord: 0, t1Turtle: 2, t2Turtle: 1 },
+                    createEmptyGame(), createEmptyGame(), createEmptyGame()
+                ]
+            };
 
+            // R2_M2 (Semifinal 2): Seed #3 AP.Bren vs Seed #2 Team Liquid ID (Bo3 -> 1-2)
+            state.matches['R2_M2'] = {
+                games: [
+                    { winner: '1', duration: '17:50', t1Kills: 16, t2Kills: 14, t1Deaths: 14, t2Deaths: 16, t1Gold: 57200, t2Gold: 53900, t1Towers: 8, t2Towers: 4, t1Lord: 2, t2Lord: 1, t1Turtle: 2, t2Turtle: 1 },
+                    { winner: '2', duration: '14:48', t1Kills: 7, t2Kills: 19, t1Deaths: 19, t2Deaths: 7, t1Gold: 38900, t2Gold: 48600, t1Towers: 2, t2Towers: 9, t1Lord: 0, t2Lord: 1, t1Turtle: 0, t2Turtle: 3 },
+                    { winner: '2', duration: '19:15', t1Kills: 15, t2Kills: 21, t1Deaths: 21, t2Deaths: 15, t1Gold: 61000, t2Gold: 65800, t1Towers: 5, t2Towers: 9, t1Lord: 1, t2Lord: 2, t1Turtle: 1, t2Turtle: 2 },
+                    createEmptyGame(), createEmptyGame()
+                ]
+            };
+
+            // R3_M1 (Grand Finals Bo5): Seed #1 ONIC Esports vs Seed #2 Team Liquid ID (3-1)
+            state.matches['R3_M1'] = {
+                games: [
+                    { winner: '1', duration: '14:55', t1Kills: 18, t2Kills: 9, t1Deaths: 9, t2Deaths: 18, t1Gold: 48900, t2Gold: 40200, t1Towers: 9, t2Towers: 2, t1Lord: 1, t2Lord: 0, t1Turtle: 2, t2Turtle: 1 },
+                    { winner: '2', duration: '17:30', t1Kills: 12, t2Kills: 20, t1Deaths: 20, t2Deaths: 12, t1Gold: 52100, t2Gold: 59400, t1Towers: 3, t2Towers: 9, t1Lord: 0, t2Lord: 2, t1Turtle: 1, t2Turtle: 2 },
+                    { winner: '1', duration: '15:40', t1Kills: 21, t2Kills: 10, t1Deaths: 10, t2Deaths: 21, t1Gold: 52800, t2Gold: 43100, t1Towers: 9, t2Towers: 3, t1Lord: 1, t2Lord: 0, t1Turtle: 3, t2Turtle: 0 },
+                    { winner: '1', duration: '16:22', t1Kills: 19, t2Kills: 11, t1Deaths: 11, t2Deaths: 19, t1Gold: 54600, t2Gold: 46500, t1Towers: 9, t2Towers: 2, t1Lord: 2, t2Lord: 0, t1Turtle: 2, t2Turtle: 1 },
+                    createEmptyGame()
+                ]
+            };
+
+            renderTeamInputs();
             recalculate();
         }
 
-        // Custom Modal Dialog (Replaces browser confirm/alert)
         function promptReset() {
             const overlay = document.getElementById('modalOverlay');
             document.getElementById('modalTitle').textContent = 'Confirm Reset';
-            document.getElementById('modalBody').textContent = 'Clear all match data, standings, and reset team names to default?';
+            document.getElementById('modalBody').textContent =
+                'Clear all match logs, reset all statistical points, and return to default 4 teams?';
             document.getElementById('modalActions').innerHTML = `
                 <button onclick="closeModal()">Cancel</button>
-                <button class="primary" onclick="executeReset()">Reset Everything</button>
+                <button class="primary" onclick="executeReset()">Reset All</button>
             `;
             overlay.style.display = 'flex';
         }
 
         function executeReset() {
-            state = defaultState();
-            document.getElementById('nameA').value = state.teams.A;
-            document.getElementById('nameB').value = state.teams.B;
-            document.getElementById('nameC').value = state.teams.C;
+            state = createDefaultState(4);
             closeModal();
+            renderTeamInputs();
             recalculate();
         }
 
@@ -1025,11 +1533,8 @@
                 .replace(/"/g, '&quot;');
         }
 
-        // Boot
         window.onload = () => {
-            document.getElementById('nameA').value = state.teams.A;
-            document.getElementById('nameB').value = state.teams.B;
-            document.getElementById('nameC').value = state.teams.C;
+            renderTeamInputs();
             recalculate();
         };
     </script>
