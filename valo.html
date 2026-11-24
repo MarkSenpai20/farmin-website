@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Valorant Tournament Manager — Automated System</title>
+    <title>Valorant Tournament Manager - Bo3 Round Robin &amp; Finals</title>
     <style>
-        /* Minimalist Brutalist Black & White Theme */
+        /* Strict Minimalist Black & White Design */
         :root {
             --bg: #ffffff;
             --fg: #000000;
-            --muted: #f5f5f5;
+            --muted: #f4f4f4;
             --border: #000000;
-            --subtle-border: #cccccc;
+            --subtle: #cccccc;
             --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
             --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
@@ -29,11 +29,11 @@
             font-size: 13px;
             line-height: 1.4;
             padding: 20px;
-            max-width: 1400px;
+            max-width: 1440px;
             margin: 0 auto;
         }
 
-        /* Header & Controls */
+        /* Header & Toolbar */
         header {
             border-bottom: 2px solid var(--border);
             padding-bottom: 16px;
@@ -55,14 +55,14 @@
 
         .subtitle {
             font-family: var(--font-mono);
-            font-size: 12px;
-            color: #444;
+            font-size: 11px;
+            color: #444444;
         }
 
         .toolbar {
             display: flex;
-            gap: 8px;
             flex-wrap: wrap;
+            gap: 8px;
         }
 
         button {
@@ -92,11 +92,13 @@
             background: #333333;
         }
 
-        /* Layout Sections */
+        /* Sections */
         section {
             border: 1px solid var(--border);
             padding: 16px;
             margin-bottom: 24px;
+            min-width: 0;
+            max-width: 100%;
         }
 
         .section-header {
@@ -108,38 +110,47 @@
             padding-bottom: 8px;
             margin-bottom: 16px;
             display: flex;
+            flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
             gap: 8px;
         }
 
-        /* Team Inputs */
+        /* Team Grid */
         .team-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 16px;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 12px;
         }
 
-        .input-box {
+        .team-item {
             display: flex;
-            flex-direction: column;
-            gap: 4px;
+            align-items: center;
+            border: 1px solid var(--border);
         }
 
-        .input-box label {
+        .seed-tag {
             font-family: var(--font-mono);
             font-size: 11px;
-            text-transform: uppercase;
             font-weight: 700;
+            padding: 6px 10px;
+            background: var(--muted);
+            border-right: 1px solid var(--border);
+            white-space: nowrap;
         }
 
         input[type="text"], input[type="number"], select {
-            width: 100%;
             border: 1px solid var(--border);
             background: var(--bg);
             color: var(--fg);
             font-family: var(--font-mono);
             font-size: 12px;
+            padding: 6px 8px;
+            width: 100%;
+        }
+
+        .team-item input {
+            border: none;
             padding: 6px 8px;
         }
 
@@ -148,10 +159,12 @@
             outline-offset: -2px;
         }
 
-        /* Tables */
+        /* Tables & Scroll Containment */
         .table-wrap {
             width: 100%;
+            max-width: 100%;
             overflow-x: auto;
+            min-width: 0;
         }
 
         table {
@@ -186,10 +199,6 @@
             min-width: 54px;
         }
 
-        td input[type="text"] {
-            min-width: 85px;
-        }
-
         td select {
             min-width: 115px;
         }
@@ -198,11 +207,120 @@
         .center { text-align: center; }
         .bold { font-weight: 700; }
 
+        .note {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: #444444;
+            margin-top: 10px;
+            line-height: 1.5;
+        }
+
+        /* Round Robin Bracket Tree Visualization */
+        .bracket-scroll {
+            width: 100%;
+            overflow-x: auto;
+            min-width: 0;
+            padding-bottom: 8px;
+        }
+
+        .bracket-board {
+            display: flex;
+            gap: 20px;
+            align-items: stretch;
+            min-width: max-content;
+        }
+
+        .bracket-col {
+            display: flex;
+            flex-direction: column;
+            min-width: 230px;
+            max-width: 250px;
+        }
+
+        .bracket-col.finals-col {
+            border-left: 2px dashed var(--border);
+            padding-left: 20px;
+            min-width: 250px;
+            max-width: 270px;
+        }
+
+        .bracket-col-title {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 6px 8px;
+            border: 1px solid var(--border);
+            background: var(--muted);
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .bracket-col.finals-col .bracket-col-title {
+            background: var(--fg);
+            color: var(--bg);
+        }
+
+        .bracket-col-matches {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            flex: 1;
+            gap: 14px;
+        }
+
+        .b-match {
+            border: 1px solid var(--border);
+            background: var(--bg);
+            font-family: var(--font-mono);
+            font-size: 11px;
+        }
+
+        .b-match-head {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 8px;
+            background: var(--muted);
+            border-bottom: 1px solid var(--border);
+            font-weight: 700;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+
+        .b-slot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 8px;
+            gap: 8px;
+        }
+
+        .b-slot:first-of-type {
+            border-bottom: 1px solid var(--subtle);
+        }
+
+        .b-slot.winner {
+            background: var(--fg);
+            color: var(--bg);
+            font-weight: 700;
+        }
+
+        .b-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .b-score {
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
         /* Series Cards */
         .series-grid {
             display: grid;
             grid-template-columns: minmax(0, 1fr);
-            gap: 20px;
+            gap: 16px;
             min-width: 0;
         }
 
@@ -220,9 +338,9 @@
             justify-content: space-between;
             align-items: center;
             gap: 8px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             padding-bottom: 8px;
-            border-bottom: 1px solid var(--subtle-border);
+            border-bottom: 1px solid var(--subtle);
             font-family: var(--font-mono);
         }
 
@@ -230,7 +348,8 @@
             border: 1px solid var(--border);
             padding: 2px 8px;
             font-weight: 700;
-            font-size: 12px;
+            font-size: 11px;
+            text-transform: uppercase;
         }
 
         .score-pill.done {
@@ -244,91 +363,27 @@
             background: var(--muted);
         }
 
-        .note {
-            font-family: var(--font-mono);
-            font-size: 11px;
-            color: #444;
-            margin-top: 8px;
-        }
-
-        /* Mobile Input Sizing & Responsive Layout */
+        /* Mobile Responsive Adjustments */
         @media (max-width: 768px) {
-            body {
-                padding: 12px;
-            }
-
-            header {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 12px;
-            }
-
-            .toolbar {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 8px;
-                width: 100%;
-            }
-
-            .toolbar button.primary {
-                grid-column: span 2;
-            }
-
-            button {
-                padding: 12px 14px;
-                font-size: 12px;
-            }
-
-            section {
-                padding: 12px;
-                margin-bottom: 16px;
-            }
-
-            .section-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 4px;
-            }
-
-            .team-grid {
-                grid-template-columns: 1fr;
-                gap: 12px;
-            }
-
-            input[type="text"], input[type="number"], select {
-                font-size: 16px;
-                padding: 8px;
-            }
-
-            td input[type="number"], td input[type="text"], td select {
-                font-size: 14px;
-                padding: 8px 6px;
-            }
-
-            th, td {
-                padding: 8px 6px;
-            }
-
-            .series-card {
-                padding: 10px;
-            }
-
-            .series-top {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .score-pill {
-                align-self: flex-start;
-            }
+            body { padding: 12px; }
+            header { flex-direction: column; align-items: stretch; gap: 12px; }
+            .toolbar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+            .toolbar button.primary { grid-column: span 2; }
+            button { padding: 11px 12px; }
+            section { padding: 12px; margin-bottom: 16px; }
+            .section-header { flex-direction: column; align-items: flex-start; }
+            .team-grid { grid-template-columns: 1fr; }
+            input[type="text"], input[type="number"], select { font-size: 16px; padding: 8px; }
+            td input[type="number"], td select { font-size: 14px; padding: 8px 6px; }
+            th, td { padding: 8px 6px; }
         }
 
-        /* Custom Modal Notification */
+        /* Custom Modal */
         #modalOverlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.55);
             align-items: center;
             justify-content: center;
             z-index: 1000;
@@ -339,7 +394,7 @@
             background: var(--bg);
             border: 2px solid var(--border);
             padding: 20px;
-            max-width: 400px;
+            max-width: 420px;
             width: 100%;
             font-family: var(--font-mono);
         }
@@ -355,6 +410,7 @@
         #modalBody {
             font-size: 12px;
             margin-bottom: 16px;
+            line-height: 1.5;
         }
 
         #modalActions {
@@ -368,64 +424,47 @@
 
     <header>
         <div>
-            <h1>Valorant Tournament System</h1>
-            <div class="subtitle">Automated 4-Team Round Robin (Bo3) &amp; Grand Finals (Bo3)</div>
+            <h1>Valorant Tournament Manager</h1>
+            <div class="subtitle">4-Team Round Robin (Best of 3) &rarr; Grand Finals (Best of 3)</div>
         </div>
         <div class="toolbar">
             <button onclick="loadDemoData()">Load Demo Data</button>
-            <button onclick="promptReset()">Reset All</button>
-            <button class="primary" onclick="exportCSV()">Export CSV</button>
+            <button onclick="promptReset()">Reset Data</button>
+            <button class="primary" onclick="exportCSV()">Export to CSV</button>
         </div>
     </header>
 
     <!-- 01. TEAM REGISTRATION -->
     <section>
         <div class="section-header">
-            <span>01. Participating Teams (4 Teams)</span>
-            <span class="subtitle">Auto-syncs across all 6 Round Robin series &amp; Finals</span>
+            <span>01. Competing Teams (4 Teams)</span>
+            <span class="subtitle">Auto-Saved on Every Edit</span>
         </div>
-        <div class="team-grid">
-            <div class="input-box">
-                <label for="nameA">Team 1</label>
-                <input type="text" id="nameA" value="Team Alpha" oninput="recalculate()">
-            </div>
-            <div class="input-box">
-                <label for="nameB">Team 2</label>
-                <input type="text" id="nameB" value="Team Bravo" oninput="recalculate()">
-            </div>
-            <div class="input-box">
-                <label for="nameC">Team 3</label>
-                <input type="text" id="nameC" value="Team Charlie" oninput="recalculate()">
-            </div>
-            <div class="input-box">
-                <label for="nameD">Team 4</label>
-                <input type="text" id="nameD" value="Team Delta" oninput="recalculate()">
-            </div>
-        </div>
+        <div class="team-grid" id="teamInputsGrid"></div>
     </section>
 
-    <!-- 02. AUTOMATED STANDINGS -->
+    <!-- 02. ROUND ROBIN STANDINGS -->
     <section>
         <div class="section-header">
-            <span>02. Live Group Standings</span>
+            <span>02. Round Robin Standings (Live Calculated)</span>
             <span class="subtitle">Top 2 Seeds Advance to Bo3 Grand Finals</span>
         </div>
         <div class="table-wrap">
             <table id="standingsTable">
                 <thead>
                     <tr>
-                        <th class="center">Seed</th>
+                        <th class="center">Rank</th>
                         <th>Team Name</th>
                         <th class="center">Series W-L</th>
                         <th class="center">Maps W-L</th>
                         <th class="center">Net Maps</th>
+                        <th class="center">Points</th>
                         <th class="center">Rounds W-L</th>
                         <th class="center">Round Diff</th>
-                        <th class="center">Points</th>
-                        <th class="num">Kills</th>
-                        <th class="num">Deaths</th>
-                        <th class="num">Assists</th>
-                        <th class="center">K/D</th>
+                        <th class="num">Total Kills</th>
+                        <th class="num">Total Deaths</th>
+                        <th class="num">Total Assists</th>
+                        <th class="center">K/D Ratio</th>
                         <th class="center">Status</th>
                     </tr>
                 </thead>
@@ -433,27 +472,41 @@
             </table>
         </div>
         <div class="note">
-            Points: 2-0 Win = 3 pts | 2-1 Win = 2 pts | 1-2 Loss = 1 pt | 0-2 Loss = 0 pts. 
-            Tiebreakers: 1. Match Points &rarr; 2. Net Map Wins &rarr; 3. Round Differential (Rounds Won - Rounds Lost) &rarr; 4. Head-to-Head (2-way) &rarr; 5. Total Kills.
+            <strong>Scoring &amp; Tiebreakers:</strong> 2–0 Win = <strong>3 pts</strong> | 2–1 Win = <strong>2 pts</strong> | 1–2 Loss = <strong>1 pt</strong> | 0–2 Loss = <strong>0 pts</strong>.<br>
+            Tiebreaker Order: 1. Match Points &rarr; 2. Net Map Wins &rarr; 3. Round Differential &rarr; 4. Head-to-Head (2-way) &rarr; 5. Total Kills.
         </div>
     </section>
 
-    <!-- 03. ROUND ROBIN GAME-BY-GAME ENTRY -->
+    <!-- 03. ROUND ROBIN BRACKET TREE -->
     <section>
         <div class="section-header">
-            <span>03. Round Robin Match Logs (6 Series &times; Best of 3)</span>
-            <span class="subtitle">Enter map scores &amp; K/D/A; map winners &amp; series scores auto-compute</span>
+            <span>03. Round Robin Bracket Tree</span>
+            <span id="championBanner" class="score-pill">Champion: TBD</span>
         </div>
-        <div class="series-grid" id="rrContainer"></div>
+        <div class="bracket-scroll">
+            <div class="bracket-board" id="roundRobinTree"></div>
+        </div>
+        <div class="note">
+            Visualizes all 3 Round Robin Rounds (6 Bo3 series total) feeding the top 2 ranked seeds directly into the <strong>Best-of-3 Grand Finals</strong>.
+        </div>
     </section>
 
-    <!-- 04. GRAND FINALS (BEST OF 3) -->
+    <!-- 04. ROUND ROBIN MATCH LOGS (6 SERIES x BO3) -->
     <section>
         <div class="section-header">
-            <span>04. Grand Finals (Best of 3)</span>
-            <span id="finalsChampionBadge" class="score-pill">Awaiting Group Stage</span>
+            <span>04. Round Robin Match Logs (Best of 3)</span>
+            <span class="subtitle">Enter Map Rounds &amp; K/D/A; Map Winners Auto-Detect at 13+ Rounds</span>
         </div>
-        <div id="finalsContainer"></div>
+        <div class="series-grid" id="rrMatchesContainer"></div>
+    </section>
+
+    <!-- 05. GRAND FINALS (BEST OF 3) -->
+    <section>
+        <div class="section-header">
+            <span>05. Grand Finals (Best of 3)</span>
+            <span class="subtitle" id="finalsSeedsBadge">Seed #1 vs Seed #2</span>
+        </div>
+        <div class="series-grid" id="finalsContainer"></div>
     </section>
 
     <!-- Custom Modal -->
@@ -467,48 +520,52 @@
 
     <script>
         /**
-         * Valorant 4-Team Tournament State & Automation Engine
-         * Tracks Map Picks, Rounds Won/Lost, Kills, Deaths, and Assists per map.
-         * Dual-layer persistence (localStorage + window.name fallback) prevents data loss on accidental refresh.
+         * Valorant 4-Team Tournament Manager (Bo3 Round Robin + Bo3 Grand Finals)
+         * Includes Round Robin Bracket Tree visualization, auto map winner detection,
+         * refresh persistence (localStorage + window.name), and CSV export.
          */
-        const STORAGE_KEY = 'valorant_auto_tournament_4t_v1';
+        const STORAGE_KEY = 'valorant_4team_bo3_v2';
 
         const VALORANT_MAPS = [
-            '', 'Abyss', 'Ascent', 'Bind', 'Breeze', 'Fracture', 'Haven', 'Icebox', 'Lotus', 'Pearl', 'Split', 'Sunset'
+            '', 'Abyss', 'Ascent', 'Bind', 'Breeze', 'Fracture',
+            'Haven', 'Icebox', 'Lotus', 'Pearl', 'Split', 'Sunset'
         ];
 
-        const defaultState = () => ({
-            teams: {
-                A: 'Team Alpha',
-                B: 'Team Bravo',
-                C: 'Team Charlie',
-                D: 'Team Delta'
-            },
-            rr: [
-                // 4-Team Single Round Robin (6 Series across 3 Rounds)
-                createEmptySeries('rr1', 'A', 'B', 3, 'Round 1 — Match 1'),
-                createEmptySeries('rr2', 'C', 'D', 3, 'Round 1 — Match 2'),
-                createEmptySeries('rr3', 'A', 'C', 3, 'Round 2 — Match 3'),
-                createEmptySeries('rr4', 'B', 'D', 3, 'Round 2 — Match 4'),
-                createEmptySeries('rr5', 'A', 'D', 3, 'Round 3 — Match 5'),
-                createEmptySeries('rr6', 'B', 'C', 3, 'Round 3 — Match 6')
-            ],
-            finals: createEmptySeries('finals', 'SEED1', 'SEED2', 3, 'Championship Match')
-        });
+        const RR_SCHEDULE = [
+            { id: 'RR_R1_M1', round: 1, code: 'R1-M1', t1Idx: 0, t2Idx: 1 },
+            { id: 'RR_R1_M2', round: 1, code: 'R1-M2', t1Idx: 2, t2Idx: 3 },
+            { id: 'RR_R2_M1', round: 2, code: 'R2-M1', t1Idx: 0, t2Idx: 2 },
+            { id: 'RR_R2_M2', round: 2, code: 'R2-M2', t1Idx: 1, t2Idx: 3 },
+            { id: 'RR_R3_M1', round: 3, code: 'R3-M1', t1Idx: 0, t2Idx: 3 },
+            { id: 'RR_R3_M2', round: 3, code: 'R3-M2', t1Idx: 1, t2Idx: 2 }
+        ];
 
-        function createEmptySeries(id, t1, t2, maxGames, label = '') {
-            const games = [];
-            for (let i = 0; i < maxGames; i++) {
-                games.push({
-                    map: '',
-                    winner: '', // '' (auto from rounds) | '1' | '2'
-                    t1Rounds: 0, t2Rounds: 0,
-                    t1Kills: 0, t2Kills: 0,
-                    t1Deaths: 0, t2Deaths: 0,
-                    t1Assists: 0, t2Assists: 0
-                });
-            }
-            return { id, label, t1, t2, maxGames, games };
+        function createEmptyMap() {
+            return {
+                map: '',
+                winnerOverride: '', // '' | '1' | '2'
+                t1Rounds: 0,
+                t2Rounds: 0,
+                t1Kills: 0,
+                t1Deaths: 0,
+                t1Assists: 0,
+                t2Kills: 0,
+                t2Deaths: 0,
+                t2Assists: 0
+            };
+        }
+
+        function createDefaultState() {
+            const matches = {};
+            RR_SCHEDULE.forEach(s => {
+                matches[s.id] = [createEmptyMap(), createEmptyMap(), createEmptyMap()];
+            });
+            matches['FINALS'] = [createEmptyMap(), createEmptyMap(), createEmptyMap()];
+
+            return {
+                teams: ['Sentinels', 'Paper Rex', 'Fnatic', 'Team Heretics'],
+                matches
+            };
         }
 
         let state = loadState();
@@ -518,321 +575,386 @@
             try {
                 const raw = localStorage.getItem(STORAGE_KEY);
                 if (raw) parsed = JSON.parse(raw);
-            } catch (e) { /* ignore storage restrictions */ }
+            } catch (e) { /* ignore storage errors */ }
 
-            if (!parsed && window.name && window.name.startsWith('VAL_STATE:')) {
+            if (!parsed && window.name && window.name.startsWith('VAL_4T:')) {
                 try {
-                    parsed = JSON.parse(window.name.slice('VAL_STATE:'.length));
+                    parsed = JSON.parse(window.name.slice('VAL_4T:'.length));
                 } catch (e) { /* ignore parse errors */ }
             }
 
-            if (parsed && parsed.teams && parsed.rr && parsed.rr.length === 6 && parsed.finals) {
+            if (parsed && Array.isArray(parsed.teams) && parsed.teams.length === 4 && parsed.matches) {
                 return parsed;
             }
-            return defaultState();
+            return createDefaultState();
         }
 
         function saveState() {
             const serialized = JSON.stringify(state);
             try {
                 localStorage.setItem(STORAGE_KEY, serialized);
-            } catch (e) { /* ignore storage quota/sandbox issues */ }
+            } catch (e) { /* ignore */ }
             try {
-                window.name = 'VAL_STATE:' + serialized;
-            } catch (e) { /* ignore window.name errors */ }
+                window.name = 'VAL_4T:' + serialized;
+            } catch (e) { /* ignore */ }
         }
 
         window.addEventListener('beforeunload', saveState);
         window.addEventListener('pagehide', saveState);
 
-        /**
-         * Evaluates a Best-of-3 Valorant series.
-         * Automatically infers the map winner if round scores are entered (e.g. 13-9)
-         * unless manually overridden, and locks Game 3 once a team reaches 2 map wins.
-         */
-        function evaluateSeries(series) {
-            const winTarget = Math.ceil(series.maxGames / 2); // 2 wins for Bo3
+        function detectMapWinner(m) {
+            if (m.winnerOverride === '1' || m.winnerOverride === '2') return m.winnerOverride;
+            const r1 = m.t1Rounds;
+            const r2 = m.t2Rounds;
+            if (r1 >= 13 && r1 >= r2 + 2) return '1';
+            if (r2 >= 13 && r2 >= r1 + 2) return '2';
+            return '';
+        }
+
+        function evaluateBo3Series(mapsArr) {
             let t1Maps = 0, t2Maps = 0;
             let t1Rounds = 0, t2Rounds = 0;
-            let t1Kills = 0, t2Kills = 0;
-            let t1Deaths = 0, t2Deaths = 0;
-            let t1Assists = 0, t2Assists = 0;
+            let t1Kills = 0, t1Deaths = 0, t1Assists = 0;
+            let t2Kills = 0, t2Deaths = 0, t2Assists = 0;
             let seriesWinner = '';
 
-            const evaluatedGames = series.games.map((g) => {
-                const alreadyClinched = t1Maps >= winTarget || t2Maps >= winTarget;
-                const disabled = alreadyClinched;
-
-                // Auto-detect winner from round score if winner dropdown wasn't explicitly locked to the other team
-                let effectiveWinner = '';
-                if (!disabled) {
-                    if (g.winner === '1' || g.winner === '2') {
-                        effectiveWinner = g.winner;
-                    } else if (g.t1Rounds > g.t2Rounds && g.t1Rounds >= 13) {
-                        effectiveWinner = '1';
-                    } else if (g.t2Rounds > g.t1Rounds && g.t2Rounds >= 13) {
-                        effectiveWinner = '2';
-                    }
-
-                    t1Rounds += g.t1Rounds;
-                    t2Rounds += g.t2Rounds;
-                    t1Kills += g.t1Kills;
-                    t2Kills += g.t2Kills;
-                    t1Deaths += g.t1Deaths;
-                    t2Deaths += g.t2Deaths;
-                    t1Assists += g.t1Assists;
-                    t2Assists += g.t2Assists;
-
-                    if (effectiveWinner === '1') t1Maps++;
-                    else if (effectiveWinner === '2') t2Maps++;
+            const evaluatedMaps = [];
+            for (let i = 0; i < 3; i++) {
+                const raw = mapsArr[i] || createEmptyMap();
+                const alreadyDecided = seriesWinner !== '';
+                if (alreadyDecided) {
+                    evaluatedMaps.push({ ...raw, detectedWinner: '', disabled: true });
+                    continue;
                 }
 
-                return { ...g, disabled, effectiveWinner };
-            });
+                const win = detectMapWinner(raw);
+                if (win === '1') t1Maps++;
+                else if (win === '2') t2Maps++;
 
-            if (t1Maps >= winTarget) seriesWinner = '1';
-            else if (t2Maps >= winTarget) seriesWinner = '2';
+                t1Rounds += raw.t1Rounds;
+                t2Rounds += raw.t2Rounds;
+                t1Kills += raw.t1Kills;
+                t1Deaths += raw.t1Deaths;
+                t1Assists += raw.t1Assists;
+                t2Kills += raw.t2Kills;
+                t2Deaths += raw.t2Deaths;
+                t2Assists += raw.t2Assists;
+
+                if (t1Maps >= 2) seriesWinner = '1';
+                else if (t2Maps >= 2) seriesWinner = '2';
+
+                evaluatedMaps.push({ ...raw, detectedWinner: win, disabled: false });
+            }
 
             return {
                 t1Maps, t2Maps,
                 t1Rounds, t2Rounds,
-                t1Kills, t2Kills,
-                t1Deaths, t2Deaths,
-                t1Assists, t2Assists,
+                t1Kills, t1Deaths, t1Assists,
+                t2Kills, t2Deaths, t2Assists,
                 seriesWinner,
-                evaluatedGames
+                evaluatedMaps
             };
         }
 
-        /**
-         * Master Recalculation Loop
-         */
         function recalculate() {
-            state.teams.A = document.getElementById('nameA').value.trim() || 'Team 1';
-            state.teams.B = document.getElementById('nameB').value.trim() || 'Team 2';
-            state.teams.C = document.getElementById('nameC').value.trim() || 'Team 3';
-            state.teams.D = document.getElementById('nameD').value.trim() || 'Team 4';
             saveState();
 
-            const stats = {
-                A: { key: 'A', name: state.teams.A, seriesW: 0, seriesL: 0, mapsW: 0, mapsL: 0, roundsW: 0, roundsL: 0, points: 0, kills: 0, deaths: 0, assists: 0, h2h: {} },
-                B: { key: 'B', name: state.teams.B, seriesW: 0, seriesL: 0, mapsW: 0, mapsL: 0, roundsW: 0, roundsL: 0, points: 0, kills: 0, deaths: 0, assists: 0, h2h: {} },
-                C: { key: 'C', name: state.teams.C, seriesW: 0, seriesL: 0, mapsW: 0, mapsL: 0, roundsW: 0, roundsL: 0, points: 0, kills: 0, deaths: 0, assists: 0, h2h: {} },
-                D: { key: 'D', name: state.teams.D, seriesW: 0, seriesL: 0, mapsW: 0, mapsL: 0, roundsW: 0, roundsL: 0, points: 0, kills: 0, deaths: 0, assists: 0, h2h: {} }
-            };
+            const stats = state.teams.map((name, idx) => ({
+                idx,
+                name,
+                seriesW: 0,
+                seriesL: 0,
+                mapsW: 0,
+                mapsL: 0,
+                points: 0,
+                roundsW: 0,
+                roundsL: 0,
+                kills: 0,
+                deaths: 0,
+                assists: 0,
+                h2h: {}
+            }));
 
-            state.rr.forEach((series) => {
-                const ev = evaluateSeries(series);
-                const t1 = stats[series.t1];
-                const t2 = stats[series.t2];
+            const evaluatedRR = RR_SCHEDULE.map(sched => {
+                const ev = evaluateBo3Series(state.matches[sched.id]);
+                const s1 = stats[sched.t1Idx];
+                const s2 = stats[sched.t2Idx];
 
-                t1.mapsW += ev.t1Maps;
-                t1.mapsL += ev.t2Maps;
-                t1.roundsW += ev.t1Rounds;
-                t1.roundsL += ev.t2Rounds;
-                t1.kills += ev.t1Kills;
-                t1.deaths += ev.t1Deaths;
-                t1.assists += ev.t1Assists;
+                s1.mapsW += ev.t1Maps;
+                s1.mapsL += ev.t2Maps;
+                s1.roundsW += ev.t1Rounds;
+                s1.roundsL += ev.t2Rounds;
+                s1.kills += ev.t1Kills;
+                s1.deaths += ev.t1Deaths;
+                s1.assists += ev.t1Assists;
 
-                t2.mapsW += ev.t2Maps;
-                t2.mapsL += ev.t1Maps;
-                t2.roundsW += ev.t2Rounds;
-                t2.roundsL += ev.t1Rounds;
-                t2.kills += ev.t2Kills;
-                t2.deaths += ev.t2Deaths;
-                t2.assists += ev.t2Assists;
+                s2.mapsW += ev.t2Maps;
+                s2.mapsL += ev.t1Maps;
+                s2.roundsW += ev.t2Rounds;
+                s2.roundsL += ev.t1Rounds;
+                s2.kills += ev.t2Kills;
+                s2.deaths += ev.t2Deaths;
+                s2.assists += ev.t2Assists;
 
                 if (ev.seriesWinner === '1') {
-                    t1.seriesW++;
-                    t2.seriesL++;
-                    t1.h2h[series.t2] = 1;
-                    t2.h2h[series.t1] = -1;
+                    s1.seriesW++;
+                    s2.seriesL++;
+                    s1.h2h[sched.t2Idx] = 1;
+                    s2.h2h[sched.t1Idx] = -1;
                     if (ev.t2Maps === 0) {
-                        t1.points += 3;
+                        s1.points += 3;
                     } else {
-                        t1.points += 2;
-                        t2.points += 1;
+                        s1.points += 2;
+                        s2.points += 1;
                     }
                 } else if (ev.seriesWinner === '2') {
-                    t2.seriesW++;
-                    t1.seriesL++;
-                    t2.h2h[series.t1] = 1;
-                    t1.h2h[series.t2] = -1;
+                    s2.seriesW++;
+                    s1.seriesL++;
+                    s2.h2h[sched.t1Idx] = 1;
+                    s1.h2h[sched.t2Idx] = -1;
                     if (ev.t1Maps === 0) {
-                        t2.points += 3;
+                        s2.points += 3;
                     } else {
-                        t2.points += 2;
-                        t1.points += 1;
+                        s2.points += 2;
+                        s1.points += 1;
                     }
                 }
+
+                return { ...sched, ev };
             });
 
-            const ranked = Object.values(stats).sort((a, b) => {
+            // Sort standings: Points -> Net Maps -> Round Diff -> Head-to-Head -> Total Kills
+            const ranked = [...stats].sort((a, b) => {
                 if (b.points !== a.points) return b.points - a.points;
-
                 const netMapsA = a.mapsW - a.mapsL;
                 const netMapsB = b.mapsW - b.mapsL;
                 if (netMapsB !== netMapsA) return netMapsB - netMapsA;
-
-                const roundDiffA = a.roundsW - a.roundsL;
-                const roundDiffB = b.roundsW - b.roundsL;
-                if (roundDiffB !== roundDiffA) return roundDiffB - roundDiffA;
-
-                // 2-way Head-to-Head tiebreaker
-                const sameTierCount = Object.values(stats).filter(
-                    t => t.points === a.points &&
-                         (t.mapsW - t.mapsL) === netMapsA &&
-                         (t.roundsW - t.roundsL) === roundDiffA
-                ).length;
-                if (sameTierCount === 2 && a.h2h[b.key]) {
-                    return -a.h2h[b.key];
-                }
-
-                return b.kills - a.kills;
+                const rdA = a.roundsW - a.roundsL;
+                const rdB = b.roundsW - b.roundsL;
+                if (rdB !== rdA) return rdB - rdA;
+                if (a.h2h[b.idx]) return -a.h2h[b.idx];
+                if (b.kills !== a.kills) return b.kills - a.kills;
+                return a.idx - b.idx;
             });
 
+            const seed1 = ranked[0];
+            const seed2 = ranked[1];
+            const finalsEval = evaluateBo3Series(state.matches['FINALS']);
+
+            const champBanner = document.getElementById('championBanner');
+            if (finalsEval.seriesWinner === '1') {
+                champBanner.textContent = `CHAMPION: ${seed1.name}`;
+                champBanner.classList.add('done');
+            } else if (finalsEval.seriesWinner === '2') {
+                champBanner.textContent = `CHAMPION: ${seed2.name}`;
+                champBanner.classList.add('done');
+            } else {
+                champBanner.textContent = 'CHAMPION: TBD';
+                champBanner.classList.remove('done');
+            }
+
+            document.getElementById('finalsSeedsBadge').textContent =
+                `Seed #1: ${seed1.name} vs Seed #2: ${seed2.name}`;
+
             renderStandings(ranked);
-            renderRoundRobin();
-            renderFinals(ranked[0], ranked[1]);
+            renderRoundRobinBracketTree(evaluatedRR, seed1, seed2, finalsEval);
+            renderRRMatches(evaluatedRR);
+            renderFinalsMatch(seed1, seed2, finalsEval);
+
+            return { ranked, evaluatedRR, seed1, seed2, finalsEval };
+        }
+
+        function renderTeamInputs() {
+            const grid = document.getElementById('teamInputsGrid');
+            grid.innerHTML = state.teams.map((name, idx) => `
+                <div class="team-item">
+                    <span class="seed-tag">TEAM ${idx + 1}</span>
+                    <input type="text" value="${escapeHtml(name)}" placeholder="Team ${idx + 1}"
+                        oninput="updateTeamName(${idx}, this.value)">
+                </div>
+            `).join('');
+        }
+
+        function updateTeamName(idx, val) {
+            state.teams[idx] = val.trim() || `Team ${idx + 1}`;
+            recalculate();
         }
 
         function renderStandings(ranked) {
             const tbody = document.getElementById('standingsBody');
-            tbody.innerHTML = ranked.map((t, idx) => {
-                const netMaps = t.mapsW - t.mapsL;
-                const netMapsLabel = netMaps > 0 ? `+${netMaps}` : `${netMaps}`;
-                const roundDiff = t.roundsW - t.roundsL;
-                const roundDiffLabel = roundDiff > 0 ? `+${roundDiff}` : `${roundDiff}`;
-                const kdRatio = t.deaths > 0 ? (t.kills / t.deaths).toFixed(2) : (t.kills > 0 ? t.kills.toFixed(2) : '0.00');
-                const statusLabel = idx < 2 ? 'ADVANCES (FINALS)' : 'ELIMINATED';
+            tbody.innerHTML = ranked.map((st, rankIdx) => {
+                const netMaps = st.mapsW - st.mapsL;
+                const rd = st.roundsW - st.roundsL;
+                const kd = st.deaths > 0 ? (st.kills / st.deaths).toFixed(2) : st.kills.toFixed(2);
+                const status = rankIdx < 2 ? 'FINALS (BO3)' : 'ELIMINATED';
 
                 return `
                     <tr>
-                        <td class="center bold">#${idx + 1}</td>
-                        <td class="bold">${escapeHtml(t.name)}</td>
-                        <td class="center">${t.seriesW}–${t.seriesL}</td>
-                        <td class="center">${t.mapsW}–${t.mapsL}</td>
-                        <td class="center">${netMapsLabel}</td>
-                        <td class="center">${t.roundsW}–${t.roundsL}</td>
-                        <td class="center">${roundDiffLabel}</td>
-                        <td class="center bold">${t.points}</td>
-                        <td class="num">${t.kills}</td>
-                        <td class="num">${t.deaths}</td>
-                        <td class="num">${t.assists}</td>
-                        <td class="center">${kdRatio}</td>
-                        <td class="center bold">${statusLabel}</td>
+                        <td class="center bold">#${rankIdx + 1}</td>
+                        <td class="bold">${escapeHtml(st.name)}</td>
+                        <td class="center">${st.seriesW}–${st.seriesL}</td>
+                        <td class="center">${st.mapsW}–${st.mapsL}</td>
+                        <td class="center">${netMaps > 0 ? '+' + netMaps : netMaps}</td>
+                        <td class="center bold">${st.points}</td>
+                        <td class="center">${st.roundsW}–${st.roundsL}</td>
+                        <td class="center">${rd > 0 ? '+' + rd : rd}</td>
+                        <td class="num">${st.kills}</td>
+                        <td class="num">${st.deaths}</td>
+                        <td class="num">${st.assists}</td>
+                        <td class="center">${kd}</td>
+                        <td class="center bold">${status}</td>
                     </tr>
                 `;
             }).join('');
         }
 
-        function renderRoundRobin() {
-            const container = document.getElementById('rrContainer');
-            container.innerHTML = '';
+        /**
+         * Renders the Round Robin Bracket Tree showing Round 1, Round 2, Round 3
+         * and the Grand Finals (Bo3) column fed by Seed #1 and Seed #2.
+         */
+        function renderRoundRobinBracketTree(evaluatedRR, seed1, seed2, finalsEval) {
+            const board = document.getElementById('roundRobinTree');
+            const rounds = [1, 2, 3];
 
-            state.rr.forEach((series, sIdx) => {
-                const ev = evaluateSeries(series);
-                const name1 = state.teams[series.t1];
-                const name2 = state.teams[series.t2];
-                const isDone = ev.seriesWinner !== '';
-                const statusText = isDone
-                    ? `FINAL: ${ev.seriesWinner === '1' ? name1 : name2} (${ev.t1Maps}–${ev.t2Maps})`
-                    : `IN PROGRESS (${ev.t1Maps}–${ev.t2Maps})`;
-
-                const card = document.createElement('div');
-                card.className = 'series-card';
-                card.innerHTML = `
-                    <div class="series-top">
-                        <div>
-                            <strong>SERIES ${sIdx + 1}: ${escapeHtml(name1)} vs ${escapeHtml(name2)}</strong>
-                            <span class="subtitle" style="margin-left: 8px;">[${escapeHtml(series.label)}]</span>
+            const rrColsHtml = rounds.map(rNum => {
+                const matchesInRound = evaluatedRR.filter(m => m.round === rNum);
+                return `
+                    <div class="bracket-col">
+                        <div class="bracket-col-title">Round Robin — Round ${rNum} (Bo3)</div>
+                        <div class="bracket-col-matches">
+                            ${matchesInRound.map(m => {
+                                const t1Name = state.teams[m.t1Idx];
+                                const t2Name = state.teams[m.t2Idx];
+                                const w1 = m.ev.seriesWinner === '1';
+                                const w2 = m.ev.seriesWinner === '2';
+                                return `
+                                    <div class="b-match">
+                                        <div class="b-match-head">
+                                            <span>${m.code}</span>
+                                            <span>${m.ev.seriesWinner ? 'FINAL' : 'BO3'}</span>
+                                        </div>
+                                        <div class="b-slot ${w1 ? 'winner' : ''}">
+                                            <span class="b-name">${escapeHtml(t1Name)}</span>
+                                            <span class="b-score">${m.ev.t1Maps}</span>
+                                        </div>
+                                        <div class="b-slot ${w2 ? 'winner' : ''}">
+                                            <span class="b-name">${escapeHtml(t2Name)}</span>
+                                            <span class="b-score">${m.ev.t2Maps}</span>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
                         </div>
+                    </div>
+                `;
+            }).join('');
+
+            const fWin1 = finalsEval.seriesWinner === '1';
+            const fWin2 = finalsEval.seriesWinner === '2';
+            const finalsColHtml = `
+                <div class="bracket-col finals-col">
+                    <div class="bracket-col-title">Grand Finals (Bo3)</div>
+                    <div class="bracket-col-matches">
+                        <div class="b-match">
+                            <div class="b-match-head">
+                                <span>GF-M1 (TOP 2 SEEDS)</span>
+                                <span>${finalsEval.seriesWinner ? 'CHAMPION' : 'BO3'}</span>
+                            </div>
+                            <div class="b-slot ${fWin1 ? 'winner' : ''}">
+                                <span class="b-name">#1 ${escapeHtml(seed1.name)}</span>
+                                <span class="b-score">${finalsEval.t1Maps}</span>
+                            </div>
+                            <div class="b-slot ${fWin2 ? 'winner' : ''}">
+                                <span class="b-name">#2 ${escapeHtml(seed2.name)}</span>
+                                <span class="b-score">${finalsEval.t2Maps}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            board.innerHTML = rrColsHtml + finalsColHtml;
+        }
+
+        function renderRRMatches(evaluatedRR) {
+            const container = document.getElementById('rrMatchesContainer');
+            container.innerHTML = evaluatedRR.map(m => {
+                const t1Name = state.teams[m.t1Idx];
+                const t2Name = state.teams[m.t2Idx];
+                return renderSeriesCard(m.id, `${m.code} (Round ${m.round}): ${t1Name} vs ${t2Name}`, t1Name, t2Name, m.ev);
+            }).join('');
+        }
+
+        function renderFinalsMatch(seed1, seed2, finalsEval) {
+            const container = document.getElementById('finalsContainer');
+            container.innerHTML = renderSeriesCard(
+                'FINALS',
+                `GRAND FINALS (BO3): #1 ${seed1.name} vs #2 ${seed2.name}`,
+                seed1.name,
+                seed2.name,
+                finalsEval
+            );
+        }
+
+        function renderSeriesCard(matchId, title, t1Name, t2Name, ev) {
+            const isDone = ev.seriesWinner !== '';
+            const statusText = isDone
+                ? `WINNER: ${ev.seriesWinner === '1' ? t1Name : t2Name} (${ev.t1Maps}–${ev.t2Maps})`
+                : `IN PROGRESS (${ev.t1Maps}–${ev.t2Maps})`;
+
+            return `
+                <div class="series-card">
+                    <div class="series-top">
+                        <strong>${escapeHtml(title)}</strong>
                         <span class="score-pill ${isDone ? 'done' : ''}">${escapeHtml(statusText)}</span>
                     </div>
                     <div class="table-wrap">
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Game</th>
-                                    <th>Map</th>
+                                    <th>Map #</th>
+                                    <th>Map Pick</th>
                                     <th>Winner</th>
-                                    <th class="num">${escapeHtml(name1)} Rnds</th>
-                                    <th class="num">${escapeHtml(name2)} Rnds</th>
-                                    <th class="num">${escapeHtml(name1)} K</th>
-                                    <th class="num">${escapeHtml(name1)} D</th>
-                                    <th class="num">${escapeHtml(name1)} A</th>
-                                    <th class="num">${escapeHtml(name2)} K</th>
-                                    <th class="num">${escapeHtml(name2)} D</th>
-                                    <th class="num">${escapeHtml(name2)} A</th>
+                                    <th class="num">${escapeHtml(t1Name)} Rnds</th>
+                                    <th class="num">${escapeHtml(t2Name)} Rnds</th>
+                                    <th class="num">${escapeHtml(t1Name)} K</th>
+                                    <th class="num">${escapeHtml(t1Name)} D</th>
+                                    <th class="num">${escapeHtml(t1Name)} A</th>
+                                    <th class="num">${escapeHtml(t2Name)} K</th>
+                                    <th class="num">${escapeHtml(t2Name)} D</th>
+                                    <th class="num">${escapeHtml(t2Name)} A</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${ev.evaluatedGames.map((g, gIdx) => renderGameRow('rr', sIdx, gIdx, g, name1, name2)).join('')}
+                                ${ev.evaluatedMaps.map((g, gIdx) => `
+                                    <tr class="${g.disabled ? 'game-disabled' : ''}">
+                                        <td class="bold">Map ${gIdx + 1}</td>
+                                        <td>
+                                            <select onchange="updateMapField('${matchId}', ${gIdx}, 'map', this.value, true)">
+                                                ${VALORANT_MAPS.map(mp => `
+                                                    <option value="${mp}" ${g.map === mp ? 'selected' : ''}>${mp || '-- Select Map --'}</option>
+                                                `).join('')}
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select onchange="updateMapField('${matchId}', ${gIdx}, 'winnerOverride', this.value, true)">
+                                                <option value="" ${g.detectedWinner === '' ? 'selected' : ''}>Auto (13+ Rnds)</option>
+                                                <option value="1" ${g.detectedWinner === '1' ? 'selected' : ''}>${escapeHtml(t1Name)}</option>
+                                                <option value="2" ${g.detectedWinner === '2' ? 'selected' : ''}>${escapeHtml(t2Name)}</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="number" inputmode="numeric" min="0" value="${g.t1Rounds}" oninput="updateMapField('${matchId}', ${gIdx}, 't1Rounds', this.value, false)" onchange="updateMapField('${matchId}', ${gIdx}, 't1Rounds', this.value, true)"></td>
+                                        <td><input type="number" inputmode="numeric" min="0" value="${g.t2Rounds}" oninput="updateMapField('${matchId}', ${gIdx}, 't2Rounds', this.value, false)" onchange="updateMapField('${matchId}', ${gIdx}, 't2Rounds', this.value, true)"></td>
+                                        <td><input type="number" inputmode="numeric" min="0" value="${g.t1Kills}" oninput="updateMapField('${matchId}', ${gIdx}, 't1Kills', this.value, false)" onchange="updateMapField('${matchId}', ${gIdx}, 't1Kills', this.value, true)"></td>
+                                        <td><input type="number" inputmode="numeric" min="0" value="${g.t1Deaths}" oninput="updateMapField('${matchId}', ${gIdx}, 't1Deaths', this.value, false)" onchange="updateMapField('${matchId}', ${gIdx}, 't1Deaths', this.value, true)"></td>
+                                        <td><input type="number" inputmode="numeric" min="0" value="${g.t1Assists}" oninput="updateMapField('${matchId}', ${gIdx}, 't1Assists', this.value, false)" onchange="updateMapField('${matchId}', ${gIdx}, 't1Assists', this.value, true)"></td>
+                                        <td><input type="number" inputmode="numeric" min="0" value="${g.t2Kills}" oninput="updateMapField('${matchId}', ${gIdx}, 't2Kills', this.value, false)" onchange="updateMapField('${matchId}', ${gIdx}, 't2Kills', this.value, true)"></td>
+                                        <td><input type="number" inputmode="numeric" min="0" value="${g.t2Deaths}" oninput="updateMapField('${matchId}', ${gIdx}, 't2Deaths', this.value, false)" onchange="updateMapField('${matchId}', ${gIdx}, 't2Deaths', this.value, true)"></td>
+                                        <td><input type="number" inputmode="numeric" min="0" value="${g.t2Assists}" oninput="updateMapField('${matchId}', ${gIdx}, 't2Assists', this.value, false)" onchange="updateMapField('${matchId}', ${gIdx}, 't2Assists', this.value, true)"></td>
+                                    </tr>
+                                `).join('')}
                                 <tr style="background: var(--muted); font-weight: 700;">
-                                    <td colspan="3">SERIES TOTALS</td>
-                                    <td class="num">${ev.t1Rounds}</td>
-                                    <td class="num">${ev.t2Rounds}</td>
-                                    <td class="num">${ev.t1Kills}</td>
-                                    <td class="num">${ev.t1Deaths}</td>
-                                    <td class="num">${ev.t1Assists}</td>
-                                    <td class="num">${ev.t2Kills}</td>
-                                    <td class="num">${ev.t2Deaths}</td>
-                                    <td class="num">${ev.t2Assists}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        function renderFinals(seed1, seed2) {
-            const container = document.getElementById('finalsContainer');
-            const badge = document.getElementById('finalsChampionBadge');
-            const ev = evaluateSeries(state.finals);
-
-            const name1 = `Seed #1: ${seed1.name}`;
-            const name2 = `Seed #2: ${seed2.name}`;
-
-            if (ev.seriesWinner === '1') {
-                badge.textContent = `CHAMPION: ${seed1.name} (${ev.t1Maps}–${ev.t2Maps})`;
-                badge.classList.add('done');
-            } else if (ev.seriesWinner === '2') {
-                badge.textContent = `CHAMPION: ${seed2.name} (${ev.t2Maps}–${ev.t1Maps})`;
-                badge.classList.add('done');
-            } else {
-                badge.textContent = `SCORE: ${ev.t1Maps}–${ev.t2Maps}`;
-                badge.classList.remove('done');
-            }
-
-            container.innerHTML = `
-                <div class="series-card">
-                    <div class="series-top">
-                        <strong>GRAND FINALS (Bo3): ${escapeHtml(name1)} vs ${escapeHtml(name2)}</strong>
-                        <span class="subtitle">First to 2 Map Wins</span>
-                    </div>
-                    <div class="table-wrap">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Game</th>
-                                    <th>Map</th>
-                                    <th>Winner</th>
-                                    <th class="num">${escapeHtml(seed1.name)} Rnds</th>
-                                    <th class="num">${escapeHtml(seed2.name)} Rnds</th>
-                                    <th class="num">${escapeHtml(seed1.name)} K</th>
-                                    <th class="num">${escapeHtml(seed1.name)} D</th>
-                                    <th class="num">${escapeHtml(seed1.name)} A</th>
-                                    <th class="num">${escapeHtml(seed2.name)} K</th>
-                                    <th class="num">${escapeHtml(seed2.name)} D</th>
-                                    <th class="num">${escapeHtml(seed2.name)} A</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${ev.evaluatedGames.map((g, gIdx) => renderGameRow('finals', 0, gIdx, g, seed1.name, seed2.name)).join('')}
-                                <tr style="background: var(--muted); font-weight: 700;">
-                                    <td colspan="3">FINALS TOTALS</td>
+                                    <td colspan="3">SERIES TOTALS (${ev.t1Maps}–${ev.t2Maps})</td>
                                     <td class="num">${ev.t1Rounds}</td>
                                     <td class="num">${ev.t2Rounds}</td>
                                     <td class="num">${ev.t1Kills}</td>
@@ -849,52 +971,17 @@
             `;
         }
 
-        function renderGameRow(stage, sIdx, gIdx, g, name1, name2) {
-            const mapOptions = VALORANT_MAPS.map(m =>
-                `<option value="${m}" ${g.map === m ? 'selected' : ''}>${m || '-- Map --'}</option>`
-            ).join('');
+        function updateMapField(matchId, gIdx, field, value, shouldRender = true) {
+            if (!state.matches[matchId]) return;
+            const m = state.matches[matchId][gIdx];
+            if (!m) return;
 
-            return `
-                <tr class="${g.disabled ? 'game-disabled' : ''}">
-                    <td class="bold">Game ${gIdx + 1}</td>
-                    <td>
-                        <select onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 'map', this.value, true)">
-                            ${mapOptions}
-                        </select>
-                    </td>
-                    <td>
-                        <select onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 'winner', this.value, true)">
-                            <option value="" ${g.effectiveWinner === '' ? 'selected' : ''}>-- Auto --</option>
-                            <option value="1" ${g.effectiveWinner === '1' ? 'selected' : ''}>${escapeHtml(name1)}</option>
-                            <option value="2" ${g.effectiveWinner === '2' ? 'selected' : ''}>${escapeHtml(name2)}</option>
-                        </select>
-                    </td>
-                    <td><input type="number" inputmode="numeric" min="0" value="${g.t1Rounds}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Rounds', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Rounds', this.value, true)"></td>
-                    <td><input type="number" inputmode="numeric" min="0" value="${g.t2Rounds}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Rounds', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Rounds', this.value, true)"></td>
-                    <td><input type="number" inputmode="numeric" min="0" value="${g.t1Kills}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Kills', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Kills', this.value, true)"></td>
-                    <td><input type="number" inputmode="numeric" min="0" value="${g.t1Deaths}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Deaths', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Deaths', this.value, true)"></td>
-                    <td><input type="number" inputmode="numeric" min="0" value="${g.t1Assists}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Assists', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Assists', this.value, true)"></td>
-                    <td><input type="number" inputmode="numeric" min="0" value="${g.t2Kills}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Kills', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Kills', this.value, true)"></td>
-                    <td><input type="number" inputmode="numeric" min="0" value="${g.t2Deaths}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Deaths', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Deaths', this.value, true)"></td>
-                    <td><input type="number" inputmode="numeric" min="0" value="${g.t2Assists}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Assists', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Assists', this.value, true)"></td>
-                </tr>
-            `;
-        }
-
-        function updateGameField(stage, sIdx, gIdx, field, value, shouldRender = true) {
-            const targetSeries = stage === 'rr' ? state.rr[sIdx] : state.finals;
-            if (field === 'winner' || field === 'map') {
-                targetSeries.games[gIdx][field] = value;
+            if (field === 'map' || field === 'winnerOverride') {
+                m[field] = value;
             } else {
-                targetSeries.games[gIdx][field] = Math.max(0, parseInt(value, 10) || 0);
-                // Clear explicit winner override if rounds change so auto-win updates cleanly unless manually re-selected
-                if ((field === 't1Rounds' || field === 't2Rounds') && shouldRender) {
-                    const g = targetSeries.games[gIdx];
-                    if (g.t1Rounds >= 13 && g.t1Rounds > g.t2Rounds) g.winner = '1';
-                    else if (g.t2Rounds >= 13 && g.t2Rounds > g.t1Rounds) g.winner = '2';
-                    else if (g.t1Rounds < 13 && g.t2Rounds < 13) g.winner = '';
-                }
+                m[field] = Math.max(0, parseInt(value, 10) || 0);
             }
+
             if (shouldRender) {
                 recalculate();
             } else {
@@ -902,60 +989,51 @@
             }
         }
 
-        /**
-         * Comprehensive CSV Export (Standings + Every Round Robin Map + Grand Finals Maps)
-         */
         function exportCSV() {
+            const { ranked, evaluatedRR, seed1, seed2, finalsEval } = recalculate();
             const rows = [];
-            const csvEscape = (val) => `"${String(val).replace(/"/g, '""')}"`;
+            const esc = (val) => `"${String(val).replace(/"/g, '""')}"`;
 
-            rows.push(['VALORANT TOURNAMENT AUTOMATED REPORT (4 TEAMS - ALL BO3)']);
-            rows.push(['Generated', new Date().toLocaleString()]);
+            rows.push(['VALORANT 4-TEAM TOURNAMENT REPORT (BO3 ROUND ROBIN + BO3 GRAND FINALS)']);
+            rows.push(['Exported At', new Date().toLocaleString()]);
             rows.push([]);
 
-            // 1. Group Standings
-            rows.push(['GROUP STAGE STANDINGS (4-TEAM ROUND ROBIN - BO3)']);
-            rows.push(['Seed', 'Team Name', 'Series W-L', 'Maps W-L', 'Net Maps', 'Rounds W-L', 'Round Diff', 'Points', 'Kills', 'Deaths', 'Assists', 'K/D', 'Status']);
-            document.querySelectorAll('#standingsBody tr').forEach(tr => {
-                const cols = Array.from(tr.querySelectorAll('td')).map(td => csvEscape(td.innerText.trim()));
-                rows.push(cols);
+            rows.push(['01. ROUND ROBIN STANDINGS']);
+            rows.push(['Rank', 'Team Name', 'Series W-L', 'Maps W-L', 'Net Maps', 'Points', 'Rounds W-L', 'Round Diff', 'Kills', 'Deaths', 'Assists', 'K/D', 'Status']);
+            ranked.forEach((st, idx) => {
+                const kd = st.deaths > 0 ? (st.kills / st.deaths).toFixed(2) : st.kills.toFixed(2);
+                rows.push([
+                    `#${idx + 1}`, st.name, `${st.seriesW}-${st.seriesL}`, `${st.mapsW}-${st.mapsL}`,
+                    st.mapsW - st.mapsL, st.points, `${st.roundsW}-${st.roundsL}`, st.roundsW - st.roundsL,
+                    st.kills, st.deaths, st.assists, kd, idx < 2 ? 'FINALS (BO3)' : 'ELIMINATED'
+                ].map(esc));
             });
             rows.push([]);
 
-            // 2. Round Robin Map-by-Map Logs
-            rows.push(['ROUND ROBIN MATCH LOGS (BO3)']);
-            rows.push(['Series', 'Round', 'Game', 'Map', 'Team 1', 'Team 2', 'Winner', 'T1 Rounds', 'T2 Rounds', 'T1 Kills', 'T1 Deaths', 'T1 Assists', 'T2 Kills', 'T2 Deaths', 'T2 Assists']);
+            rows.push(['02. MATCH LOGS (ROUND ROBIN & GRAND FINALS)']);
+            rows.push(['Stage', 'Match', 'Map #', 'Map Name', 'Team 1', 'Team 2', 'Winner', 'T1 Rounds', 'T2 Rounds', 'T1 K', 'T1 D', 'T1 A', 'T2 K', 'T2 D', 'T2 A']);
 
-            state.rr.forEach((series, sIdx) => {
-                const ev = evaluateSeries(series);
-                const n1 = state.teams[series.t1];
-                const n2 = state.teams[series.t2];
-                ev.evaluatedGames.forEach((g, gIdx) => {
-                    if (!g.disabled && (g.effectiveWinner || g.t1Rounds > 0 || g.t2Rounds > 0)) {
-                        const winName = g.effectiveWinner === '1' ? n1 : (g.effectiveWinner === '2' ? n2 : 'TBD');
+            evaluatedRR.forEach(m => {
+                const t1Name = state.teams[m.t1Idx];
+                const t2Name = state.teams[m.t2Idx];
+                m.ev.evaluatedMaps.forEach((g, idx) => {
+                    if (!g.disabled && (g.detectedWinner || g.t1Rounds > 0 || g.t2Rounds > 0)) {
+                        const winName = g.detectedWinner === '1' ? t1Name : (g.detectedWinner === '2' ? t2Name : 'TBD');
                         rows.push([
-                            `Series ${sIdx + 1}`, series.label, `Game ${gIdx + 1}`, g.map || 'Unassigned', n1, n2, winName,
+                            `Round ${m.round}`, m.code, `Map ${idx + 1}`, g.map || 'Unset', t1Name, t2Name, winName,
                             g.t1Rounds, g.t2Rounds, g.t1Kills, g.t1Deaths, g.t1Assists, g.t2Kills, g.t2Deaths, g.t2Assists
-                        ].map(csvEscape));
+                        ].map(esc));
                     }
                 });
             });
-            rows.push([]);
 
-            // 3. Grand Finals Logs
-            rows.push(['GRAND FINALS LOGS (BO3)']);
-            const seed1Name = document.querySelector('#standingsBody tr:nth-child(1) td:nth-child(2)')?.innerText || 'Seed #1';
-            const seed2Name = document.querySelector('#standingsBody tr:nth-child(2) td:nth-child(2)')?.innerText || 'Seed #2';
-            const finalsEv = evaluateSeries(state.finals);
-
-            rows.push(['Stage', 'Game', 'Map', 'Seed #1', 'Seed #2', 'Winner', 'S1 Rounds', 'S2 Rounds', 'S1 Kills', 'S1 Deaths', 'S1 Assists', 'S2 Kills', 'S2 Deaths', 'S2 Assists']);
-            finalsEv.evaluatedGames.forEach((g, gIdx) => {
-                if (!g.disabled && (g.effectiveWinner || g.t1Rounds > 0 || g.t2Rounds > 0)) {
-                    const winName = g.effectiveWinner === '1' ? seed1Name : (g.effectiveWinner === '2' ? seed2Name : 'TBD');
+            finalsEval.evaluatedMaps.forEach((g, idx) => {
+                if (!g.disabled && (g.detectedWinner || g.t1Rounds > 0 || g.t2Rounds > 0)) {
+                    const winName = g.detectedWinner === '1' ? seed1.name : (g.detectedWinner === '2' ? seed2.name : 'TBD');
                     rows.push([
-                        'Grand Finals', `Game ${gIdx + 1}`, g.map || 'Unassigned', seed1Name, seed2Name, winName,
+                        'Grand Finals (Bo3)', 'GF-M1', `Map ${idx + 1}`, g.map || 'Unset', seed1.name, seed2.name, winName,
                         g.t1Rounds, g.t2Rounds, g.t1Kills, g.t1Deaths, g.t1Assists, g.t2Kills, g.t2Deaths, g.t2Assists
-                    ].map(csvEscape));
+                    ].map(esc));
                 }
             });
 
@@ -964,70 +1042,70 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `valorant_4team_tournament_${new Date().toISOString().slice(0, 10)}.csv`;
+            a.download = `valorant_4team_bo3_${new Date().toISOString().slice(0, 10)}.csv`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         }
 
-        // Demo Data for 4-Team Valorant Round Robin
         function loadDemoData() {
-            state = defaultState();
-            state.teams = { A: 'Sentinels', B: 'Paper Rex', C: 'Fnatic', D: 'DRX' };
-            document.getElementById('nameA').value = state.teams.A;
-            document.getElementById('nameB').value = state.teams.B;
-            document.getElementById('nameC').value = state.teams.C;
-            document.getElementById('nameD').value = state.teams.D;
+            state = createDefaultState();
+            state.matches['RR_R1_M1'] = [
+                { map: 'Ascent', winnerOverride: '', t1Rounds: 13, t2Rounds: 9, t1Kills: 84, t1Deaths: 68, t1Assists: 31, t2Kills: 68, t2Deaths: 84, t2Assists: 24 },
+                { map: 'Bind', winnerOverride: '', t1Rounds: 13, t2Rounds: 11, t1Kills: 89, t1Deaths: 82, t1Assists: 34, t2Kills: 82, t2Deaths: 89, t2Assists: 29 },
+                createEmptyMap()
+            ];
+            state.matches['RR_R1_M2'] = [
+                { map: 'Haven', winnerOverride: '', t1Rounds: 13, t2Rounds: 7, t1Kills: 79, t1Deaths: 58, t1Assists: 28, t2Kills: 58, t2Deaths: 79, t2Assists: 19 },
+                { map: 'Lotus', winnerOverride: '', t1Rounds: 10, t2Rounds: 13, t1Kills: 81, t1Deaths: 87, t1Assists: 26, t2Kills: 87, t2Deaths: 81, t2Assists: 33 },
+                { map: 'Split', winnerOverride: '', t1Rounds: 13, t2Rounds: 8, t1Kills: 82, t1Deaths: 63, t1Assists: 30, t2Kills: 63, t2Deaths: 82, t2Assists: 21 }
+            ];
+            state.matches['RR_R2_M1'] = [
+                { map: 'Sunset', winnerOverride: '', t1Rounds: 11, t2Rounds: 13, t1Kills: 85, t1Deaths: 91, t1Assists: 27, t2Kills: 91, t2Deaths: 85, t2Assists: 35 },
+                { map: 'Ascent', winnerOverride: '', t1Rounds: 13, t2Rounds: 10, t1Kills: 86, t1Deaths: 76, t1Assists: 32, t2Kills: 76, t2Deaths: 86, t2Assists: 25 },
+                { map: 'Icebox', winnerOverride: '', t1Rounds: 13, t2Rounds: 9, t1Kills: 83, t1Deaths: 69, t1Assists: 29, t2Kills: 69, t2Deaths: 83, t2Assists: 22 }
+            ];
+            state.matches['RR_R2_M2'] = [
+                { map: 'Bind', winnerOverride: '', t1Rounds: 13, t2Rounds: 6, t1Kills: 76, t1Deaths: 51, t1Assists: 29, t2Kills: 51, t2Deaths: 76, t2Assists: 17 },
+                { map: 'Haven', winnerOverride: '', t1Rounds: 13, t2Rounds: 8, t1Kills: 80, t1Deaths: 62, t1Assists: 31, t2Kills: 62, t2Deaths: 80, t2Assists: 20 },
+                createEmptyMap()
+            ];
+            state.matches['RR_R3_M1'] = [
+                { map: 'Lotus', winnerOverride: '', t1Rounds: 13, t2Rounds: 5, t1Kills: 74, t1Deaths: 46, t1Assists: 27, t2Kills: 46, t2Deaths: 74, t2Assists: 15 },
+                { map: 'Split', winnerOverride: '', t1Rounds: 13, t2Rounds: 7, t1Kills: 78, t1Deaths: 55, t1Assists: 28, t2Kills: 55, t2Deaths: 78, t2Assists: 18 },
+                createEmptyMap()
+            ];
+            state.matches['RR_R3_M2'] = [
+                { map: 'Abyss', winnerOverride: '', t1Rounds: 13, t2Rounds: 11, t1Kills: 88, t1Deaths: 81, t1Assists: 32, t2Kills: 81, t2Deaths: 88, t2Assists: 28 },
+                { map: 'Sunset', winnerOverride: '', t1Rounds: 9, t2Rounds: 13, t1Kills: 77, t1Deaths: 84, t1Assists: 24, t2Kills: 84, t2Deaths: 77, t2Assists: 31 },
+                { map: 'Ascent', winnerOverride: '', t1Rounds: 13, t2Rounds: 10, t1Kills: 85, t1Deaths: 75, t1Assists: 30, t2Kills: 75, t2Deaths: 85, t2Assists: 26 }
+            ];
+            state.matches['FINALS'] = [
+                { map: 'Ascent', winnerOverride: '', t1Rounds: 13, t2Rounds: 10, t1Kills: 86, t1Deaths: 76, t1Assists: 31, t2Kills: 76, t2Deaths: 86, t2Assists: 27 },
+                { map: 'Bind', winnerOverride: '', t1Rounds: 11, t2Rounds: 13, t1Kills: 83, t1Deaths: 89, t1Assists: 28, t2Kills: 89, t2Deaths: 83, t2Assists: 34 },
+                { map: 'Haven', winnerOverride: '', t1Rounds: 14, t2Rounds: 12, t1Kills: 96, t1Deaths: 90, t1Assists: 36, t2Kills: 90, t2Deaths: 96, t2Assists: 32 }
+            ];
 
-            // Series 1: A vs B (2-1)
-            state.rr[0].games[0] = { map: 'Ascent', winner: '1', t1Rounds: 13, t2Rounds: 9, t1Kills: 82, t2Kills: 68, t1Deaths: 68, t2Deaths: 82, t1Assists: 31, t2Assists: 24 };
-            state.rr[0].games[1] = { map: 'Bind', winner: '2', t1Rounds: 10, t2Rounds: 13, t1Kills: 74, t2Kills: 86, t1Deaths: 86, t2Deaths: 74, t1Assists: 27, t2Assists: 34 };
-            state.rr[0].games[2] = { map: 'Haven', winner: '1', t1Rounds: 13, t2Rounds: 11, t1Kills: 89, t2Kills: 81, t1Deaths: 81, t2Deaths: 89, t1Assists: 36, t2Assists: 29 };
-
-            // Series 2: C vs D (2-0)
-            state.rr[1].games[0] = { map: 'Lotus', winner: '1', t1Rounds: 13, t2Rounds: 6, t1Kills: 78, t2Kills: 54, t1Deaths: 54, t2Deaths: 78, t1Assists: 29, t2Assists: 18 };
-            state.rr[1].games[1] = { map: 'Split', winner: '1', t1Rounds: 13, t2Rounds: 8, t1Kills: 81, t2Kills: 61, t1Deaths: 61, t2Deaths: 81, t1Assists: 33, t2Assists: 21 };
-
-            // Series 3: A vs C (0-2)
-            state.rr[2].games[0] = { map: 'Sunset', winner: '2', t1Rounds: 8, t2Rounds: 13, t1Kills: 63, t2Kills: 80, t1Deaths: 80, t2Deaths: 63, t1Assists: 20, t2Assists: 32 };
-            state.rr[2].games[1] = { map: 'Icebox', winner: '2', t1Rounds: 11, t2Rounds: 13, t1Kills: 84, t2Kills: 91, t1Deaths: 91, t2Deaths: 84, t1Assists: 28, t2Assists: 35 };
-
-            // Series 4: B vs D (2-0)
-            state.rr[3].games[0] = { map: 'Pearl', winner: '1', t1Rounds: 13, t2Rounds: 7, t1Kills: 79, t2Kills: 58, t1Deaths: 58, t2Deaths: 79, t1Assists: 30, t2Assists: 19 };
-            state.rr[3].games[1] = { map: 'Abyss', winner: '1', t1Rounds: 13, t2Rounds: 10, t1Kills: 85, t2Kills: 72, t1Deaths: 72, t2Deaths: 85, t1Assists: 31, t2Assists: 25 };
-
-            // Series 5: A vs D (2-0)
-            state.rr[4].games[0] = { map: 'Haven', winner: '1', t1Rounds: 13, t2Rounds: 5, t1Kills: 76, t2Kills: 49, t1Deaths: 49, t2Deaths: 76, t1Assists: 28, t2Assists: 16 };
-            state.rr[4].games[1] = { map: 'Ascent', winner: '1', t1Rounds: 13, t2Rounds: 9, t1Kills: 83, t2Kills: 67, t1Deaths: 67, t2Deaths: 83, t1Assists: 34, t2Assists: 22 };
-
-            // Series 6: B vs C (1-2)
-            state.rr[5].games[0] = { map: 'Split', winner: '2', t1Rounds: 9, t2Rounds: 13, t1Kills: 69, t2Kills: 84, t1Deaths: 84, t2Deaths: 69, t1Assists: 23, t2Assists: 31 };
-            state.rr[5].games[1] = { map: 'Bind', winner: '1', t1Rounds: 13, t2Rounds: 10, t1Kills: 86, t2Kills: 75, t1Deaths: 75, t2Deaths: 86, t1Assists: 35, t2Assists: 26 };
-            state.rr[5].games[2] = { map: 'Lotus', winner: '2', t1Rounds: 12, t2Rounds: 14, t1Kills: 94, t2Kills: 101, t1Deaths: 101, t2Deaths: 94, t1Assists: 38, t2Assists: 41 };
-
+            renderTeamInputs();
             recalculate();
         }
 
-        // Custom Modal Dialog
         function promptReset() {
             const overlay = document.getElementById('modalOverlay');
             document.getElementById('modalTitle').textContent = 'Confirm Reset';
-            document.getElementById('modalBody').textContent = 'Clear all Valorant match logs, standings, and reset all 4 team names to default?';
+            document.getElementById('modalBody').textContent = 'Clear all Valorant match scores, map picks, and reset teams?';
             document.getElementById('modalActions').innerHTML = `
                 <button onclick="closeModal()">Cancel</button>
-                <button class="primary" onclick="executeReset()">Reset Everything</button>
+                <button class="primary" onclick="executeReset()">Reset All</button>
             `;
             overlay.style.display = 'flex';
         }
 
         function executeReset() {
-            state = defaultState();
-            document.getElementById('nameA').value = state.teams.A;
-            document.getElementById('nameB').value = state.teams.B;
-            document.getElementById('nameC').value = state.teams.C;
-            document.getElementById('nameD').value = state.teams.D;
+            state = createDefaultState();
             closeModal();
+            renderTeamInputs();
             recalculate();
         }
 
@@ -1043,12 +1121,8 @@
                 .replace(/"/g, '&quot;');
         }
 
-        // Boot
         window.onload = () => {
-            document.getElementById('nameA').value = state.teams.A;
-            document.getElementById('nameB').value = state.teams.B;
-            document.getElementById('nameC').value = state.teams.C;
-            document.getElementById('nameD').value = state.teams.D;
+            renderTeamInputs();
             recalculate();
         };
     </script>

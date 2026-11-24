@@ -518,7 +518,7 @@
     <header>
         <div>
             <h1>MLBB Single Elimination Manager</h1>
-            <div class="subtitle">Dynamic Bracket (Bo3 Rounds) &rarr; Grand Finals (Bo5) | Highest Stat Points = Higher Seed</div>
+            <div class="subtitle">All Teams Play Round 1 (Bo3) &rarr; Highest Stat Points Gets Subsequent BYE &rarr; Grand Finals (Bo5)</div>
         </div>
         <div class="toolbar">
             <button onclick="loadDemoData()">Load Demo Data</button>
@@ -530,16 +530,16 @@
     <!-- 01. DYNAMIC TEAM COUNT & REGISTRATION -->
     <section>
         <div class="section-header">
-            <span>01. Team Count &amp; Bracket Seeding Setup</span>
-            <span class="subtitle" id="bracketMetaBadge">4 Teams | 2 Rounds | 0 BYEs</span>
+            <span>01. Team Count &amp; Initial Seeding Setup</span>
+            <span class="subtitle" id="bracketMetaBadge">6 Teams | All Play Round 1</span>
         </div>
         <div class="setup-controls">
             <div class="control-group" style="min-width: 180px;">
                 <label for="teamCountInput">Number of Teams (2–16)</label>
-                <input type="number" id="teamCountInput" inputmode="numeric" min="2" max="16" value="4">
+                <input type="number" id="teamCountInput" inputmode="numeric" min="2" max="16" value="6">
             </div>
             <button class="primary" onclick="applyTeamCount()">Generate Bracket</button>
-            <button onclick="promptReseedByStats()">Apply Stat Points as Bracket Seeds</button>
+            <button onclick="promptReseedByStats()">Apply Stat Points as Initial Seeds</button>
         </div>
         <div class="team-grid" id="teamInputsGrid"></div>
     </section>
@@ -586,6 +586,9 @@
         </div>
         <div class="bracket-scroll">
             <div class="bracket-board" id="bracketTree"></div>
+        </div>
+        <div class="note">
+            <strong>Progression Rule:</strong> All teams compete in Round 1 (1 vs N, 2 vs N-1, etc.). If an odd number of winners advance to a later round (e.g., 3 winners from 6 teams), the advancing team with the <strong>highest Statistical Points</strong> receives the BYE directly into the next round.
         </div>
     </section>
 
@@ -715,6 +718,28 @@
             return `Round ${roundIdx + 1} (Bo3)`;
         }
 
+        function computeTeamStatPoints(st) {
+            const rawPts =
+                (st.gamesW * 100) +
+                (st.seriesW * 50) +
+                (st.kills * 3) -
+                (st.deaths * 1) +
+                (st.towers * 10) +
+                (st.lord * 15) +
+                (st.turtle * 8) +
+                Math.floor(st.gold / 2000) +
+                (st.fastBonuses * 25);
+            return Math.max(0, rawPts);
+        }
+
+        function compareTeamStats(a, b) {
+            if (b.statPoints !== a.statPoints) return b.statPoints - a.statPoints;
+            if (b.gamesW !== a.gamesW) return b.gamesW - a.gamesW;
+            if (a.fastestWin !== b.fastestWin) return a.fastestWin - b.fastestWin;
+            if (b.gold !== a.gold) return b.gold - a.gold;
+            return a.seed - b.seed;
+        }
+
         function parseDurationToSeconds(str) {
             if (!str) return 0;
             const clean = String(str).trim();
@@ -723,7 +748,7 @@
                 const parts = clean.split(':');
                 const mins = parseInt(parts[0], 10) || 0;
                 const secs = parseInt(parts[1], 10) || 0;
-                return Math.max(0, mins * 60 + secs);
+                return Math.max(0, (mins * 60) + secs);
             }
             const num = parseInt(clean, 10);
             return isNaN(num) ? 0 : Math.max(0, num * 60);
@@ -736,11 +761,8 @@
             return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
         }
 
-        /**
-         * Evaluates a single match series (Bo3 or Bo5)
-         */
-        function evaluateSeries(matchRecord, maxGames) {
-            const winTarget = Math.ceil(maxGames / 2); // 2 for Bo3, 3 for Bo5
+        function evaluateSeries(matchObj, maxGames) {
+            const winsNeeded = Math.ceil(maxGames / 2);
             let t1Wins = 0, t2Wins = 0;
             let t1Kills = 0, t2Kills = 0;
             let t1Deaths = 0, t2Deaths = 0;
@@ -751,48 +773,54 @@
             let t1WinTime = 0, t2WinTime = 0;
             let t1Fastest = Infinity, t2Fastest = Infinity;
             let t1FastBonuses = 0, t2FastBonuses = 0;
+            let seriesWinner = '';
 
-            const games = matchRecord.games.slice(0, maxGames);
-            const evaluatedGames = games.map((g) => {
-                const disabled = t1Wins >= winTarget || t2Wins >= winTarget;
-                const durSec = parseDurationToSeconds(g.duration);
+            const evaluatedGames = [];
+            for (let i = 0; i < maxGames; i++) {
+                const raw = matchObj.games[i] || createEmptyGame();
+                const alreadyDecided = seriesWinner !== '';
 
-                if (!disabled) {
-                    t1Kills += g.t1Kills;
-                    t2Kills += g.t2Kills;
-                    t1Deaths += g.t1Deaths;
-                    t2Deaths += g.t2Deaths;
-                    t1Gold += g.t1Gold;
-                    t2Gold += g.t2Gold;
-                    t1Towers += g.t1Towers;
-                    t2Towers += g.t2Towers;
-                    t1Lord += g.t1Lord;
-                    t2Lord += g.t2Lord;
-                    t1Turtle += g.t1Turtle;
-                    t2Turtle += g.t2Turtle;
+                if (alreadyDecided) {
+                    evaluatedGames.push({ ...raw, disabled: true });
+                    continue;
+                }
 
-                    if (g.winner === '1') {
-                        t1Wins++;
-                        if (durSec > 0) {
-                            t1WinTime += durSec;
-                            if (durSec < t1Fastest) t1Fastest = durSec;
-                            if (durSec < 15 * 60) t1FastBonuses++;
-                        }
-                    } else if (g.winner === '2') {
-                        t2Wins++;
-                        if (durSec > 0) {
-                            t2WinTime += durSec;
-                            if (durSec < t2Fastest) t2Fastest = durSec;
-                            if (durSec < 15 * 60) t2FastBonuses++;
-                        }
+                const durSec = parseDurationToSeconds(raw.duration);
+
+                if (raw.winner === '1') {
+                    t1Wins++;
+                    if (durSec > 0) {
+                        t1WinTime += durSec;
+                        if (durSec < t1Fastest) t1Fastest = durSec;
+                        if (durSec < 900) t1FastBonuses++;
+                    }
+                } else if (raw.winner === '2') {
+                    t2Wins++;
+                    if (durSec > 0) {
+                        t2WinTime += durSec;
+                        if (durSec < t2Fastest) t2Fastest = durSec;
+                        if (durSec < 900) t2FastBonuses++;
                     }
                 }
-                return { ...g, disabled, durSec };
-            });
 
-            let seriesWinner = '';
-            if (t1Wins >= winTarget) seriesWinner = '1';
-            else if (t2Wins >= winTarget) seriesWinner = '2';
+                t1Kills += raw.t1Kills;
+                t2Kills += raw.t2Kills;
+                t1Deaths += raw.t1Deaths;
+                t2Deaths += raw.t2Deaths;
+                t1Gold += raw.t1Gold;
+                t2Gold += raw.t2Gold;
+                t1Towers += raw.t1Towers;
+                t2Towers += raw.t2Towers;
+                t1Lord += raw.t1Lord;
+                t2Lord += raw.t2Lord;
+                t1Turtle += raw.t1Turtle;
+                t2Turtle += raw.t2Turtle;
+
+                if (t1Wins >= winsNeeded) seriesWinner = '1';
+                else if (t2Wins >= winsNeeded) seriesWinner = '2';
+
+                evaluatedGames.push({ ...raw, disabled: false });
+            }
 
             return {
                 t1Wins, t2Wins,
@@ -811,15 +839,13 @@
         }
 
         /**
-         * Builds the full single-elimination bracket structure, propagates BYEs and match winners,
-         * and aggregates Statistical Points across all rounds.
+         * Builds the full single-elimination bracket structure where:
+         * - Every team plays in Round 1 (paired 1 vs N, 2 vs N-1; if N is odd, #1 gets the Round 1 BYE).
+         * - Whenever an odd number of winners advance to a subsequent round (e.g., 3 winners after Round 1 of a 6-team bracket),
+         *   the advancing team with the highest Statistical Points earns the BYE straight into the next round.
          */
         function buildAndEvaluateBracket() {
             const n = state.teams.length;
-            const totalRounds = Math.ceil(Math.log2(n));
-            const bracketSize = Math.pow(2, totalRounds);
-            const byeCount = bracketSize - n;
-            const seedOrder = getStandardSeedOrder(bracketSize);
 
             // Map team by seed (1-indexed)
             const teamBySeed = {};
@@ -853,38 +879,73 @@
                 };
             });
 
+            // Calculate exact number of rounds needed when halving ceil(count / 2) each round
+            let simCount = n;
+            let totalRounds = 0;
+            while (simCount > 1) {
+                totalRounds++;
+                simCount = Math.ceil(simCount / 2);
+            }
+            totalRounds = Math.max(1, totalRounds);
+
             const rounds = [];
+            let currentPool = []; // Array of { type: 'TEAM', team } | { type: 'TBD', label }
+            for (let i = 1; i <= n; i++) {
+                currentPool.push({ type: 'TEAM', team: teamBySeed[i] });
+            }
+
+            let laterRoundByes = 0;
 
             for (let r = 0; r < totalRounds; r++) {
                 const isGrandFinals = (r === totalRounds - 1);
                 const maxGames = isGrandFinals ? 5 : 3;
-                const numMatches = bracketSize / Math.pow(2, r + 1);
+                const poolCount = currentPool.length;
+                const hasOddBye = (poolCount % 2 === 1);
+                const numMatches = Math.ceil(poolCount / 2);
                 const roundMatches = [];
+
+                // Refresh live statistical points before assigning seeding/BYEs for this round
+                Object.values(statsById).forEach((st) => {
+                    st.statPoints = computeTeamStatPoints(st);
+                });
+
+                // Build ordered entrants for this round
+                let orderedEntrants = [...currentPool];
+                const allEntrantsKnown = orderedEntrants.every(e => e.type === 'TEAM');
+
+                if (r > 0 && allEntrantsKnown) {
+                    // Rank advancing teams by live Statistical Points (highest stat points = top seed / BYE recipient)
+                    orderedEntrants.sort((a, b) => compareTeamStats(statsById[a.team.id], statsById[b.team.id]));
+                }
+
+                // Pair entrants: if odd count, top seed (index 0) gets the BYE, remaining pair highest vs lowest
+                const pairs = [];
+                if (hasOddBye) {
+                    laterRoundByes++;
+                    const byeEntrant = (r > 0 && !allEntrantsKnown)
+                        ? { type: 'TBD', label: 'Seed #1 (Highest Stat Winner)' }
+                        : orderedEntrants[0];
+                    pairs.push([byeEntrant, { type: 'BYE' }]);
+
+                    const rem = (r > 0 && !allEntrantsKnown)
+                        ? orderedEntrants.map((_, idx) => ({ type: 'TBD', label: `Seed #${idx + 1} (Stat Rank)` })).slice(1)
+                        : orderedEntrants.slice(1);
+                    for (let i = 0; i < rem.length / 2; i++) {
+                        pairs.push([rem[i], rem[rem.length - 1 - i]]);
+                    }
+                } else {
+                    for (let i = 0; i < poolCount / 2; i++) {
+                        pairs.push([orderedEntrants[i], orderedEntrants[poolCount - 1 - i]]);
+                    }
+                }
+
+                const nextPool = [];
 
                 for (let m = 0; m < numMatches; m++) {
                     const matchId = `R${r + 1}_M${m + 1}`;
-                    let slot1 = null; // { type: 'TEAM', team } | { type: 'BYE' } | { type: 'TBD', label }
-                    let slot2 = null;
+                    const code = `R${r + 1}-M${m + 1}`;
+                    const [slot1, slot2] = pairs[m];
 
-                    if (r === 0) {
-                        const s1 = seedOrder[m * 2];
-                        const s2 = seedOrder[m * 2 + 1];
-                        slot1 = teamBySeed[s1] ? { type: 'TEAM', team: teamBySeed[s1] } : { type: 'BYE' };
-                        slot2 = teamBySeed[s2] ? { type: 'TEAM', team: teamBySeed[s2] } : { type: 'BYE' };
-                    } else {
-                        const prev1 = rounds[r - 1].matches[m * 2];
-                        const prev2 = rounds[r - 1].matches[m * 2 + 1];
-
-                        slot1 = prev1.winnerTeam
-                            ? { type: 'TEAM', team: prev1.winnerTeam }
-                            : { type: 'TBD', label: `Winner ${prev1.code}` };
-
-                        slot2 = prev2.winnerTeam
-                            ? { type: 'TEAM', team: prev2.winnerTeam }
-                            : { type: 'TBD', label: `Winner ${prev2.code}` };
-                    }
-
-                    // Ensure match record exists in state
                     if (!state.matches[matchId]) {
                         state.matches[matchId] = { games: [] };
                     }
@@ -900,8 +961,15 @@
                     let loserTeam = null;
 
                     if (isByeMatch) {
-                        if (slot1.type === 'TEAM') winnerTeam = slot1.team;
-                        else if (slot2.type === 'TEAM') winnerTeam = slot2.team;
+                        if (slot1.type === 'TEAM') {
+                            winnerTeam = slot1.team;
+                            nextPool.push({ type: 'TEAM', team: slot1.team });
+                        } else if (slot2.type === 'TEAM') {
+                            winnerTeam = slot2.team;
+                            nextPool.push({ type: 'TEAM', team: slot2.team });
+                        } else {
+                            nextPool.push({ type: 'TBD', label: 'Seed #1 (Highest Stat Winner)' });
+                        }
                     } else if (isPlayable) {
                         const t1Stats = statsById[slot1.team.id];
                         const t2Stats = statsById[slot2.team.id];
@@ -937,6 +1005,7 @@
                             t2Stats.seriesL++;
                             t2Stats.status = 'ELIMINATED';
                             if (isGrandFinals) t1Stats.status = 'CHAMPION';
+                            nextPool.push({ type: 'TEAM', team: winnerTeam });
                         } else if (evalRes.seriesWinner === '2') {
                             winnerTeam = slot2.team;
                             loserTeam = slot1.team;
@@ -944,12 +1013,17 @@
                             t1Stats.seriesL++;
                             t1Stats.status = 'ELIMINATED';
                             if (isGrandFinals) t2Stats.status = 'CHAMPION';
+                            nextPool.push({ type: 'TEAM', team: winnerTeam });
+                        } else {
+                            nextPool.push({ type: 'TBD', label: `Winner ${code}` });
                         }
+                    } else {
+                        nextPool.push({ type: 'TBD', label: `Winner ${code}` });
                     }
 
                     roundMatches.push({
                         matchId,
-                        code: `R${r + 1}-M${m + 1}`,
+                        code,
                         roundIdx: r,
                         isGrandFinals,
                         maxGames,
@@ -969,29 +1043,15 @@
                     isGrandFinals,
                     matches: roundMatches
                 });
+
+                currentPool = nextPool;
             }
 
-            // Compute Statistical Points for every team
+            // Final Statistical Points calculation for Leaderboard
             const statLeaderboard = Object.values(statsById).map((st) => {
-                const rawPts =
-                    (st.gamesW * 100) +
-                    (st.seriesW * 50) +
-                    (st.kills * 3) -
-                    (st.deaths * 1) +
-                    (st.towers * 10) +
-                    (st.lord * 15) +
-                    (st.turtle * 8) +
-                    Math.floor(st.gold / 2000) +
-                    (st.fastBonuses * 25);
-
-                st.statPoints = Math.max(0, rawPts);
+                st.statPoints = computeTeamStatPoints(st);
                 return st;
-            }).sort((a, b) => {
-                if (b.statPoints !== a.statPoints) return b.statPoints - a.statPoints;
-                if (b.gamesW !== a.gamesW) return b.gamesW - a.gamesW;
-                if (a.fastestWin !== b.fastestWin) return a.fastestWin - b.fastestWin;
-                return b.gold - a.gold;
-            });
+            }).sort(compareTeamStats);
 
             const grandFinalsMatch = rounds[rounds.length - 1].matches[0];
             const champion = grandFinalsMatch ? grandFinalsMatch.winnerTeam : null;
@@ -999,8 +1059,7 @@
             return {
                 n,
                 totalRounds,
-                bracketSize,
-                byeCount,
+                byeCount: laterRoundByes,
                 rounds,
                 statLeaderboard,
                 champion
@@ -1014,8 +1073,9 @@
             saveState();
             const data = buildAndEvaluateBracket();
 
+            const r1MatchesCount = Math.floor(data.n / 2);
             document.getElementById('bracketMetaBadge').textContent =
-                `${data.n} Teams | ${data.totalRounds} Round${data.totalRounds > 1 ? 's' : ''} | ${data.byeCount} BYE${data.byeCount === 1 ? '' : 's'}`;
+                `${data.n} Teams | ${r1MatchesCount} Round 1 Matches | ${data.totalRounds} Rounds`;
 
             const champBanner = document.getElementById('championBanner');
             if (data.champion) {
@@ -1112,7 +1172,7 @@
                             const s2Win = m.winnerTeam && m.slot2.type === 'TEAM' && m.winnerTeam.id === m.slot2.team.id;
 
                             const s1Label = m.slot1.type === 'TEAM'
-                                ? `#${m.slot1.team.seed} ${m.slot1.team.name}`
+                                ? `${m.roundIdx > 0 ? `[Stat #${m.roundIdx === 1 && m.isByeMatch ? 1 : ''}` : ''}${m.roundIdx > 0 ? (m.isByeMatch ? 'Stat #1] ' : '') : ''}#${m.slot1.team.seed} ${m.slot1.team.name}`
                                 : (m.slot1.type === 'BYE' ? 'BYE' : m.slot1.label);
 
                             const s2Label = m.slot2.type === 'TEAM'
@@ -1131,7 +1191,7 @@
                                 <div class="b-match">
                                     <div class="b-match-head">
                                         <span>${m.code}</span>
-                                        <span>${m.isByeMatch ? 'AUTO BYE' : (m.isGrandFinals ? 'BO5' : 'BO3')}</span>
+                                        <span>${m.isByeMatch ? (m.roundIdx > 0 ? 'TOP STAT BYE' : 'BYE') : (m.isGrandFinals ? 'BO5' : 'BO3')}</span>
                                     </div>
                                     <div class="b-slot ${s1Win ? 'winner' : ''} ${m.slot1.type === 'BYE' ? 'bye' : ''}">
                                         <span class="b-name">${escapeHtml(s1Label)}</span>
@@ -1163,9 +1223,9 @@
                         </div>
                         ${byeMatches.length > 0 ? `
                             <div class="note" style="margin-top: 0; margin-bottom: 12px;">
-                                Round 1 BYEs (Auto-Advanced): ${byeMatches.map(bm =>
-                                    bm.winnerTeam ? `#${bm.winnerTeam.seed} ${escapeHtml(bm.winnerTeam.name)}` : ''
-                                ).filter(Boolean).join(' | ')}
+                                ${round.roundIdx > 0 ? 'Highest Statistical Points BYE (Auto-Advances to Next Round):' : 'Round 1 BYE (Odd Team Count):'} ${byeMatches.map(bm =>
+                                    bm.winnerTeam ? `#${bm.winnerTeam.seed} ${escapeHtml(bm.winnerTeam.name)}` : 'Awaiting Round 1 Results (Highest Stat Points)'
+                                ).join(' | ')}
                             </div>
                         ` : ''}
                         <div class="series-grid">
@@ -1436,7 +1496,8 @@
         }
 
         /**
-         * Demo Data (6 Teams with Round 1 BYEs, Bo3 Quarterfinals & Semifinals, Bo5 Grand Finals)
+         * Demo Data (6 Teams: All 6 play in Round 1 -> 3 Winners advance ->
+         * Highest Statistical Points after Round 1 earns the Semifinal BYE directly to Bo5 Grand Finals)
          */
         function loadDemoData() {
             state = createDefaultState(6);
@@ -1449,27 +1510,37 @@
                 { id: 'T6', seed: 6, name: 'Blacklist International' }
             ];
 
-            // R1_M2: Seed #4 RRQ Hoshi vs Seed #5 Selangor Red Giants (Bo3 -> 1-2)
-            state.matches['R1_M2'] = {
-                games: [
-                    { winner: '1', duration: '14:12', t1Kills: 18, t2Kills: 7, t1Deaths: 7, t2Deaths: 18, t1Gold: 46200, t2Gold: 36800, t1Towers: 9, t2Towers: 2, t1Lord: 1, t2Lord: 0, t1Turtle: 3, t2Turtle: 0 },
-                    { winner: '2', duration: '16:45', t1Kills: 11, t2Kills: 21, t1Deaths: 21, t2Deaths: 11, t1Gold: 47900, t2Gold: 55400, t1Towers: 3, t2Towers: 9, t1Lord: 0, t2Lord: 2, t1Turtle: 1, t2Turtle: 2 },
-                    { winner: '2', duration: '18:20', t1Kills: 14, t2Kills: 19, t1Deaths: 19, t2Deaths: 14, t1Gold: 54100, t2Gold: 60800, t1Towers: 4, t2Towers: 8, t1Lord: 1, t2Lord: 2, t1Turtle: 1, t2Turtle: 2 },
-                    createEmptyGame(), createEmptyGame()
-                ]
-            };
-
-            // R1_M3: Seed #3 AP.Bren vs Seed #6 Blacklist International (Bo3 -> 2-0)
-            state.matches['R1_M3'] = {
+            // R1_M1: Seed #1 ONIC Esports vs Seed #6 Blacklist International (Bo3 -> 2-0)
+            state.matches['R1_M1'] = {
                 games: [
                     { winner: '1', duration: '13:40', t1Kills: 22, t2Kills: 8, t1Deaths: 8, t2Deaths: 22, t1Gold: 45800, t2Gold: 34900, t1Towers: 9, t2Towers: 1, t1Lord: 1, t2Lord: 0, t1Turtle: 3, t2Turtle: 0 },
-                    { winner: '1', duration: '15:18', t1Kills: 17, t2Kills: 9, t1Deaths: 9, t2Deaths: 17, t1Gold: 49300, t2Gold: 40100, t1Towers: 8, t2Towers: 2, t1Lord: 1, t2Lord: 0, t1Turtle: 2, t2Turtle: 1 },
+                    { winner: '1', duration: '14:18', t1Kills: 20, t2Kills: 7, t1Deaths: 7, t2Deaths: 20, t1Gold: 49300, t2Gold: 38100, t1Towers: 9, t2Towers: 2, t1Lord: 1, t2Lord: 0, t1Turtle: 3, t2Turtle: 0 },
                     createEmptyGame(), createEmptyGame(), createEmptyGame()
                 ]
             };
 
-            // R2_M1 (Semifinal 1): Seed #1 ONIC Esports vs Seed #5 Selangor Red Giants (Bo3 -> 2-0)
-            state.matches['R2_M1'] = {
+            // R1_M2: Seed #2 Team Liquid ID vs Seed #5 Selangor Red Giants (Bo3 -> 2-1)
+            state.matches['R1_M2'] = {
+                games: [
+                    { winner: '2', duration: '15:12', t1Kills: 11, t2Kills: 18, t1Deaths: 18, t2Deaths: 11, t1Gold: 42200, t2Gold: 49800, t1Towers: 3, t2Towers: 9, t1Lord: 0, t2Lord: 1, t1Turtle: 1, t2Turtle: 2 },
+                    { winner: '1', duration: '16:45', t1Kills: 21, t2Kills: 11, t1Deaths: 11, t2Deaths: 21, t1Gold: 55400, t2Gold: 47900, t1Towers: 9, t2Towers: 3, t1Lord: 2, t2Lord: 0, t1Turtle: 2, t2Turtle: 1 },
+                    { winner: '1', duration: '18:20', t1Kills: 19, t2Kills: 14, t1Deaths: 14, t2Deaths: 19, t1Gold: 60800, t2Gold: 54100, t1Towers: 8, t2Towers: 4, t1Lord: 2, t2Lord: 1, t1Turtle: 2, t2Turtle: 1 },
+                    createEmptyGame(), createEmptyGame()
+                ]
+            };
+
+            // R1_M3: Seed #3 AP.Bren vs Seed #4 RRQ Hoshi (Bo3 -> 2-0)
+            state.matches['R1_M3'] = {
+                games: [
+                    { winner: '1', duration: '15:40', t1Kills: 17, t2Kills: 9, t1Deaths: 9, t2Deaths: 17, t1Gold: 48800, t2Gold: 40900, t1Towers: 8, t2Towers: 2, t1Lord: 1, t2Lord: 0, t1Turtle: 2, t2Turtle: 1 },
+                    { winner: '1', duration: '16:18', t1Kills: 16, t2Kills: 10, t1Deaths: 10, t2Deaths: 16, t1Gold: 50300, t2Gold: 42100, t1Towers: 9, t2Towers: 2, t1Lord: 1, t2Lord: 0, t1Turtle: 2, t2Turtle: 1 },
+                    createEmptyGame(), createEmptyGame(), createEmptyGame()
+                ]
+            };
+
+            // Round 2 (Semifinals): 3 Winners advance -> Team Liquid ID has highest Stat Points (3 games played) -> gets TOP STAT BYE to Finals!
+            // R2_M2: ONIC Esports vs AP.Bren (Bo3 -> 2-0)
+            state.matches['R2_M2'] = {
                 games: [
                     { winner: '1', duration: '14:05', t1Kills: 20, t2Kills: 6, t1Deaths: 6, t2Deaths: 20, t1Gold: 47100, t2Gold: 35600, t1Towers: 9, t2Towers: 1, t1Lord: 1, t2Lord: 0, t1Turtle: 3, t2Turtle: 0 },
                     { winner: '1', duration: '16:10', t1Kills: 19, t2Kills: 12, t1Deaths: 12, t2Deaths: 19, t1Gold: 53400, t2Gold: 45200, t1Towers: 9, t2Towers: 3, t1Lord: 2, t2Lord: 0, t1Turtle: 2, t2Turtle: 1 },
@@ -1477,23 +1548,13 @@
                 ]
             };
 
-            // R2_M2 (Semifinal 2): Seed #3 AP.Bren vs Seed #2 Team Liquid ID (Bo3 -> 1-2)
-            state.matches['R2_M2'] = {
-                games: [
-                    { winner: '1', duration: '17:50', t1Kills: 16, t2Kills: 14, t1Deaths: 14, t2Deaths: 16, t1Gold: 57200, t2Gold: 53900, t1Towers: 8, t2Towers: 4, t1Lord: 2, t2Lord: 1, t1Turtle: 2, t2Turtle: 1 },
-                    { winner: '2', duration: '14:48', t1Kills: 7, t2Kills: 19, t1Deaths: 19, t2Deaths: 7, t1Gold: 38900, t2Gold: 48600, t1Towers: 2, t2Towers: 9, t1Lord: 0, t2Lord: 1, t1Turtle: 0, t2Turtle: 3 },
-                    { winner: '2', duration: '19:15', t1Kills: 15, t2Kills: 21, t1Deaths: 21, t2Deaths: 15, t1Gold: 61000, t2Gold: 65800, t1Towers: 5, t2Towers: 9, t1Lord: 1, t2Lord: 2, t1Turtle: 1, t2Turtle: 2 },
-                    createEmptyGame(), createEmptyGame()
-                ]
-            };
-
-            // R3_M1 (Grand Finals Bo5): Seed #1 ONIC Esports vs Seed #2 Team Liquid ID (3-1)
+            // Round 3 (Grand Finals Bo5): Team Liquid ID (Top Stat Bye) vs ONIC Esports (Semifinal Winner)
             state.matches['R3_M1'] = {
                 games: [
-                    { winner: '1', duration: '14:55', t1Kills: 18, t2Kills: 9, t1Deaths: 9, t2Deaths: 18, t1Gold: 48900, t2Gold: 40200, t1Towers: 9, t2Towers: 2, t1Lord: 1, t2Lord: 0, t1Turtle: 2, t2Turtle: 1 },
-                    { winner: '2', duration: '17:30', t1Kills: 12, t2Kills: 20, t1Deaths: 20, t2Deaths: 12, t1Gold: 52100, t2Gold: 59400, t1Towers: 3, t2Towers: 9, t1Lord: 0, t2Lord: 2, t1Turtle: 1, t2Turtle: 2 },
-                    { winner: '1', duration: '15:40', t1Kills: 21, t2Kills: 10, t1Deaths: 10, t2Deaths: 21, t1Gold: 52800, t2Gold: 43100, t1Towers: 9, t2Towers: 3, t1Lord: 1, t2Lord: 0, t1Turtle: 3, t2Turtle: 0 },
-                    { winner: '1', duration: '16:22', t1Kills: 19, t2Kills: 11, t1Deaths: 11, t2Deaths: 19, t1Gold: 54600, t2Gold: 46500, t1Towers: 9, t2Towers: 2, t1Lord: 2, t2Lord: 0, t1Turtle: 2, t2Turtle: 1 },
+                    { winner: '2', duration: '14:55', t1Kills: 9, t2Kills: 18, t1Deaths: 18, t2Deaths: 9, t1Gold: 40200, t2Gold: 48900, t1Towers: 2, t2Towers: 9, t1Lord: 0, t2Lord: 1, t1Turtle: 1, t2Turtle: 2 },
+                    { winner: '1', duration: '17:30', t1Kills: 20, t2Kills: 12, t1Deaths: 12, t2Deaths: 20, t1Gold: 59400, t2Gold: 52100, t1Towers: 9, t2Towers: 3, t1Lord: 2, t2Lord: 0, t1Turtle: 2, t2Turtle: 1 },
+                    { winner: '2', duration: '15:40', t1Kills: 10, t2Kills: 21, t1Deaths: 21, t2Deaths: 10, t1Gold: 43100, t2Gold: 52800, t1Towers: 3, t2Towers: 9, t1Lord: 0, t2Lord: 1, t1Turtle: 0, t2Turtle: 3 },
+                    { winner: '2', duration: '16:22', t1Kills: 11, t2Kills: 19, t1Deaths: 19, t2Deaths: 11, t1Gold: 46500, t2Gold: 54600, t1Towers: 2, t2Towers: 9, t1Lord: 0, t2Lord: 2, t1Turtle: 1, t2Turtle: 2 },
                     createEmptyGame()
                 ]
             };
