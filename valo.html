@@ -465,6 +465,7 @@
                         <th class="num">Total Deaths</th>
                         <th class="num">Total Assists</th>
                         <th class="center">K/D Ratio</th>
+                        <th class="num">Avg ACS</th>
                         <th class="center">Status</th>
                     </tr>
                 </thead>
@@ -473,7 +474,7 @@
         </div>
         <div class="note">
             <strong>Scoring &amp; Tiebreakers:</strong> 2–0 Win = <strong>3 pts</strong> | 2–1 Win = <strong>2 pts</strong> | 1–2 Loss = <strong>1 pt</strong> | 0–2 Loss = <strong>0 pts</strong>.<br>
-            Tiebreaker Order: 1. Match Points &rarr; 2. Net Map Wins &rarr; 3. Round Differential &rarr; 4. Head-to-Head (2-way) &rarr; 5. Total Kills.
+            Tiebreaker Order: 1. Match Points &rarr; 2. Net Map Wins &rarr; 3. Round Differential &rarr; 4. Head-to-Head (2-way) &rarr; 5. Avg ACS &rarr; 6. Total Kills.
         </div>
     </section>
 
@@ -546,9 +547,11 @@
                 winnerOverride: '', // '' | '1' | '2'
                 t1Rounds: 0,
                 t2Rounds: 0,
+                t1Acs: 0,
                 t1Kills: 0,
                 t1Deaths: 0,
                 t1Assists: 0,
+                t2Acs: 0,
                 t2Kills: 0,
                 t2Deaths: 0,
                 t2Assists: 0
@@ -614,8 +617,9 @@
         function evaluateBo3Series(mapsArr) {
             let t1Maps = 0, t2Maps = 0;
             let t1Rounds = 0, t2Rounds = 0;
-            let t1Kills = 0, t1Deaths = 0, t1Assists = 0;
-            let t2Kills = 0, t2Deaths = 0, t2Assists = 0;
+            let t1AcsSum = 0, t1Kills = 0, t1Deaths = 0, t1Assists = 0;
+            let t2AcsSum = 0, t2Kills = 0, t2Deaths = 0, t2Assists = 0;
+            let playedMaps = 0;
             let seriesWinner = '';
 
             const evaluatedMaps = [];
@@ -631,11 +635,16 @@
                 if (win === '1') t1Maps++;
                 else if (win === '2') t2Maps++;
 
+                const mapPlayed = Boolean(win || raw.t1Rounds > 0 || raw.t2Rounds > 0 || (raw.t1Acs || 0) > 0 || (raw.t2Acs || 0) > 0);
+                if (mapPlayed) playedMaps++;
+
                 t1Rounds += raw.t1Rounds;
                 t2Rounds += raw.t2Rounds;
+                t1AcsSum += (raw.t1Acs || 0);
                 t1Kills += raw.t1Kills;
                 t1Deaths += raw.t1Deaths;
                 t1Assists += raw.t1Assists;
+                t2AcsSum += (raw.t2Acs || 0);
                 t2Kills += raw.t2Kills;
                 t2Deaths += raw.t2Deaths;
                 t2Assists += raw.t2Assists;
@@ -649,6 +658,7 @@
             return {
                 t1Maps, t2Maps,
                 t1Rounds, t2Rounds,
+                t1AcsSum, t2AcsSum, playedMaps,
                 t1Kills, t1Deaths, t1Assists,
                 t2Kills, t2Deaths, t2Assists,
                 seriesWinner,
@@ -669,6 +679,8 @@
                 points: 0,
                 roundsW: 0,
                 roundsL: 0,
+                acsSum: 0,
+                playedMaps: 0,
                 kills: 0,
                 deaths: 0,
                 assists: 0,
@@ -684,6 +696,8 @@
                 s1.mapsL += ev.t2Maps;
                 s1.roundsW += ev.t1Rounds;
                 s1.roundsL += ev.t2Rounds;
+                s1.acsSum += ev.t1AcsSum;
+                s1.playedMaps += ev.playedMaps;
                 s1.kills += ev.t1Kills;
                 s1.deaths += ev.t1Deaths;
                 s1.assists += ev.t1Assists;
@@ -692,6 +706,8 @@
                 s2.mapsL += ev.t1Maps;
                 s2.roundsW += ev.t2Rounds;
                 s2.roundsL += ev.t1Rounds;
+                s2.acsSum += ev.t2AcsSum;
+                s2.playedMaps += ev.playedMaps;
                 s2.kills += ev.t2Kills;
                 s2.deaths += ev.t2Deaths;
                 s2.assists += ev.t2Assists;
@@ -723,7 +739,7 @@
                 return { ...sched, ev };
             });
 
-            // Sort standings: Points -> Net Maps -> Round Diff -> Head-to-Head -> Total Kills
+            // Sort standings: Points -> Net Maps -> Round Diff -> Head-to-Head -> Avg ACS -> Total Kills
             const ranked = [...stats].sort((a, b) => {
                 if (b.points !== a.points) return b.points - a.points;
                 const netMapsA = a.mapsW - a.mapsL;
@@ -733,6 +749,9 @@
                 const rdB = b.roundsW - b.roundsL;
                 if (rdB !== rdA) return rdB - rdA;
                 if (a.h2h[b.idx]) return -a.h2h[b.idx];
+                const avgAcsA = a.playedMaps > 0 ? a.acsSum / a.playedMaps : 0;
+                const avgAcsB = b.playedMaps > 0 ? b.acsSum / b.playedMaps : 0;
+                if (avgAcsB !== avgAcsA) return avgAcsB - avgAcsA;
                 if (b.kills !== a.kills) return b.kills - a.kills;
                 return a.idx - b.idx;
             });
@@ -786,6 +805,7 @@
                 const netMaps = st.mapsW - st.mapsL;
                 const rd = st.roundsW - st.roundsL;
                 const kd = st.deaths > 0 ? (st.kills / st.deaths).toFixed(2) : st.kills.toFixed(2);
+                const avgAcs = st.playedMaps > 0 ? Math.round(st.acsSum / st.playedMaps) : 0;
                 const status = rankIdx < 2 ? 'FINALS (BO3)' : 'ELIMINATED';
 
                 return `
@@ -802,6 +822,7 @@
                         <td class="num">${st.deaths}</td>
                         <td class="num">${st.assists}</td>
                         <td class="center">${kd}</td>
+                        <td class="num bold">${avgAcs}</td>
                         <td class="center bold">${status}</td>
                     </tr>
                 `;
@@ -917,9 +938,11 @@
                                     <th>Winner</th>
                                     <th class="num">${escapeHtml(t1Name)} Rnds</th>
                                     <th class="num">${escapeHtml(t2Name)} Rnds</th>
+                                    <th class="num">${escapeHtml(t1Name)} ACS</th>
                                     <th class="num">${escapeHtml(t1Name)} K</th>
                                     <th class="num">${escapeHtml(t1Name)} D</th>
                                     <th class="num">${escapeHtml(t1Name)} A</th>
+                                    <th class="num">${escapeHtml(t2Name)} ACS</th>
                                     <th class="num">${escapeHtml(t2Name)} K</th>
                                     <th class="num">${escapeHtml(t2Name)} D</th>
                                     <th class="num">${escapeHtml(t2Name)} A</th>
@@ -945,9 +968,11 @@
                                         </td>
                                         <td><input type="number" inputmode="numeric" min="0" value="${g.t1Rounds}" oninput="updateMapField('${matchId}', ${gIdx}, 't1Rounds', this.value, false)" onchange="updateMapField('${matchId}', ${gIdx}, 't1Rounds', this.value, true)"></td>
                                         <td><input type="number" inputmode="numeric" min="0" value="${g.t2Rounds}" oninput="updateMapField('${matchId}', ${gIdx}, 't2Rounds', this.value, false)" onchange="updateMapField('${matchId}', ${gIdx}, 't2Rounds', this.value, true)"></td>
+                                        <td><input type="number" inputmode="numeric" min="0" value="${g.t1Acs || 0}" oninput="updateMapField('${matchId}', ${gIdx}, 't1Acs', this.value, false)" onchange="updateMapField('${matchId}', ${gIdx}, 't1Acs', this.value, true)"></td>
                                         <td><input type="number" inputmode="numeric" min="0" value="${g.t1Kills}" oninput="updateMapField('${matchId}', ${gIdx}, 't1Kills', this.value, false)" onchange="updateMapField('${matchId}', ${gIdx}, 't1Kills', this.value, true)"></td>
                                         <td><input type="number" inputmode="numeric" min="0" value="${g.t1Deaths}" oninput="updateMapField('${matchId}', ${gIdx}, 't1Deaths', this.value, false)" onchange="updateMapField('${matchId}', ${gIdx}, 't1Deaths', this.value, true)"></td>
                                         <td><input type="number" inputmode="numeric" min="0" value="${g.t1Assists}" oninput="updateMapField('${matchId}', ${gIdx}, 't1Assists', this.value, false)" onchange="updateMapField('${matchId}', ${gIdx}, 't1Assists', this.value, true)"></td>
+                                        <td><input type="number" inputmode="numeric" min="0" value="${g.t2Acs || 0}" oninput="updateMapField('${matchId}', ${gIdx}, 't2Acs', this.value, false)" onchange="updateMapField('${matchId}', ${gIdx}, 't2Acs', this.value, true)"></td>
                                         <td><input type="number" inputmode="numeric" min="0" value="${g.t2Kills}" oninput="updateMapField('${matchId}', ${gIdx}, 't2Kills', this.value, false)" onchange="updateMapField('${matchId}', ${gIdx}, 't2Kills', this.value, true)"></td>
                                         <td><input type="number" inputmode="numeric" min="0" value="${g.t2Deaths}" oninput="updateMapField('${matchId}', ${gIdx}, 't2Deaths', this.value, false)" onchange="updateMapField('${matchId}', ${gIdx}, 't2Deaths', this.value, true)"></td>
                                         <td><input type="number" inputmode="numeric" min="0" value="${g.t2Assists}" oninput="updateMapField('${matchId}', ${gIdx}, 't2Assists', this.value, false)" onchange="updateMapField('${matchId}', ${gIdx}, 't2Assists', this.value, true)"></td>
@@ -957,9 +982,11 @@
                                     <td colspan="3">SERIES TOTALS (${ev.t1Maps}–${ev.t2Maps})</td>
                                     <td class="num">${ev.t1Rounds}</td>
                                     <td class="num">${ev.t2Rounds}</td>
+                                    <td class="num">${ev.playedMaps > 0 ? Math.round(ev.t1AcsSum / ev.playedMaps) : 0} avg</td>
                                     <td class="num">${ev.t1Kills}</td>
                                     <td class="num">${ev.t1Deaths}</td>
                                     <td class="num">${ev.t1Assists}</td>
+                                    <td class="num">${ev.playedMaps > 0 ? Math.round(ev.t2AcsSum / ev.playedMaps) : 0} avg</td>
                                     <td class="num">${ev.t2Kills}</td>
                                     <td class="num">${ev.t2Deaths}</td>
                                     <td class="num">${ev.t2Assists}</td>
@@ -999,40 +1026,41 @@
             rows.push([]);
 
             rows.push(['01. ROUND ROBIN STANDINGS']);
-            rows.push(['Rank', 'Team Name', 'Series W-L', 'Maps W-L', 'Net Maps', 'Points', 'Rounds W-L', 'Round Diff', 'Kills', 'Deaths', 'Assists', 'K/D', 'Status']);
+            rows.push(['Rank', 'Team Name', 'Series W-L', 'Maps W-L', 'Net Maps', 'Points', 'Rounds W-L', 'Round Diff', 'Kills', 'Deaths', 'Assists', 'K/D', 'Avg ACS', 'Status']);
             ranked.forEach((st, idx) => {
                 const kd = st.deaths > 0 ? (st.kills / st.deaths).toFixed(2) : st.kills.toFixed(2);
+                const avgAcs = st.playedMaps > 0 ? Math.round(st.acsSum / st.playedMaps) : 0;
                 rows.push([
                     `#${idx + 1}`, st.name, `${st.seriesW}-${st.seriesL}`, `${st.mapsW}-${st.mapsL}`,
                     st.mapsW - st.mapsL, st.points, `${st.roundsW}-${st.roundsL}`, st.roundsW - st.roundsL,
-                    st.kills, st.deaths, st.assists, kd, idx < 2 ? 'FINALS (BO3)' : 'ELIMINATED'
+                    st.kills, st.deaths, st.assists, kd, avgAcs, idx < 2 ? 'FINALS (BO3)' : 'ELIMINATED'
                 ].map(esc));
             });
             rows.push([]);
 
             rows.push(['02. MATCH LOGS (ROUND ROBIN & GRAND FINALS)']);
-            rows.push(['Stage', 'Match', 'Map #', 'Map Name', 'Team 1', 'Team 2', 'Winner', 'T1 Rounds', 'T2 Rounds', 'T1 K', 'T1 D', 'T1 A', 'T2 K', 'T2 D', 'T2 A']);
+            rows.push(['Stage', 'Match', 'Map #', 'Map Name', 'Team 1', 'Team 2', 'Winner', 'T1 Rounds', 'T2 Rounds', 'T1 ACS', 'T1 K', 'T1 D', 'T1 A', 'T2 ACS', 'T2 K', 'T2 D', 'T2 A']);
 
             evaluatedRR.forEach(m => {
                 const t1Name = state.teams[m.t1Idx];
                 const t2Name = state.teams[m.t2Idx];
                 m.ev.evaluatedMaps.forEach((g, idx) => {
-                    if (!g.disabled && (g.detectedWinner || g.t1Rounds > 0 || g.t2Rounds > 0)) {
+                    if (!g.disabled && (g.detectedWinner || g.t1Rounds > 0 || g.t2Rounds > 0 || (g.t1Acs || 0) > 0 || (g.t2Acs || 0) > 0)) {
                         const winName = g.detectedWinner === '1' ? t1Name : (g.detectedWinner === '2' ? t2Name : 'TBD');
                         rows.push([
                             `Round ${m.round}`, m.code, `Map ${idx + 1}`, g.map || 'Unset', t1Name, t2Name, winName,
-                            g.t1Rounds, g.t2Rounds, g.t1Kills, g.t1Deaths, g.t1Assists, g.t2Kills, g.t2Deaths, g.t2Assists
+                            g.t1Rounds, g.t2Rounds, g.t1Acs || 0, g.t1Kills, g.t1Deaths, g.t1Assists, g.t2Acs || 0, g.t2Kills, g.t2Deaths, g.t2Assists
                         ].map(esc));
                     }
                 });
             });
 
             finalsEval.evaluatedMaps.forEach((g, idx) => {
-                if (!g.disabled && (g.detectedWinner || g.t1Rounds > 0 || g.t2Rounds > 0)) {
+                if (!g.disabled && (g.detectedWinner || g.t1Rounds > 0 || g.t2Rounds > 0 || (g.t1Acs || 0) > 0 || (g.t2Acs || 0) > 0)) {
                     const winName = g.detectedWinner === '1' ? seed1.name : (g.detectedWinner === '2' ? seed2.name : 'TBD');
                     rows.push([
                         'Grand Finals (Bo3)', 'GF-M1', `Map ${idx + 1}`, g.map || 'Unset', seed1.name, seed2.name, winName,
-                        g.t1Rounds, g.t2Rounds, g.t1Kills, g.t1Deaths, g.t1Assists, g.t2Kills, g.t2Deaths, g.t2Assists
+                        g.t1Rounds, g.t2Rounds, g.t1Acs || 0, g.t1Kills, g.t1Deaths, g.t1Assists, g.t2Acs || 0, g.t2Kills, g.t2Deaths, g.t2Assists
                     ].map(esc));
                 }
             });
@@ -1052,39 +1080,39 @@
         function loadDemoData() {
             state = createDefaultState();
             state.matches['RR_R1_M1'] = [
-                { map: 'Ascent', winnerOverride: '', t1Rounds: 13, t2Rounds: 9, t1Kills: 84, t1Deaths: 68, t1Assists: 31, t2Kills: 68, t2Deaths: 84, t2Assists: 24 },
-                { map: 'Bind', winnerOverride: '', t1Rounds: 13, t2Rounds: 11, t1Kills: 89, t1Deaths: 82, t1Assists: 34, t2Kills: 82, t2Deaths: 89, t2Assists: 29 },
+                { map: 'Ascent', winnerOverride: '', t1Rounds: 13, t2Rounds: 9, t1Acs: 224, t1Kills: 84, t1Deaths: 68, t1Assists: 31, t2Acs: 189, t2Kills: 68, t2Deaths: 84, t2Assists: 24 },
+                { map: 'Bind', winnerOverride: '', t1Rounds: 13, t2Rounds: 11, t1Acs: 218, t1Kills: 89, t1Deaths: 82, t1Assists: 34, t2Acs: 201, t2Kills: 82, t2Deaths: 89, t2Assists: 29 },
                 createEmptyMap()
             ];
             state.matches['RR_R1_M2'] = [
-                { map: 'Haven', winnerOverride: '', t1Rounds: 13, t2Rounds: 7, t1Kills: 79, t1Deaths: 58, t1Assists: 28, t2Kills: 58, t2Deaths: 79, t2Assists: 19 },
-                { map: 'Lotus', winnerOverride: '', t1Rounds: 10, t2Rounds: 13, t1Kills: 81, t1Deaths: 87, t1Assists: 26, t2Kills: 87, t2Deaths: 81, t2Assists: 33 },
-                { map: 'Split', winnerOverride: '', t1Rounds: 13, t2Rounds: 8, t1Kills: 82, t1Deaths: 63, t1Assists: 30, t2Kills: 63, t2Deaths: 82, t2Assists: 21 }
+                { map: 'Haven', winnerOverride: '', t1Rounds: 13, t2Rounds: 7, t1Acs: 231, t1Kills: 79, t1Deaths: 58, t1Assists: 28, t2Acs: 176, t2Kills: 58, t2Deaths: 79, t2Assists: 19 },
+                { map: 'Lotus', winnerOverride: '', t1Rounds: 10, t2Rounds: 13, t1Acs: 196, t1Kills: 81, t1Deaths: 87, t1Assists: 26, t2Acs: 215, t2Kills: 87, t2Deaths: 81, t2Assists: 33 },
+                { map: 'Split', winnerOverride: '', t1Rounds: 13, t2Rounds: 8, t1Acs: 226, t1Kills: 82, t1Deaths: 63, t1Assists: 30, t2Acs: 184, t2Kills: 63, t2Deaths: 82, t2Assists: 21 }
             ];
             state.matches['RR_R2_M1'] = [
-                { map: 'Sunset', winnerOverride: '', t1Rounds: 11, t2Rounds: 13, t1Kills: 85, t1Deaths: 91, t1Assists: 27, t2Kills: 91, t2Deaths: 85, t2Assists: 35 },
-                { map: 'Ascent', winnerOverride: '', t1Rounds: 13, t2Rounds: 10, t1Kills: 86, t1Deaths: 76, t1Assists: 32, t2Kills: 76, t2Deaths: 86, t2Assists: 25 },
-                { map: 'Icebox', winnerOverride: '', t1Rounds: 13, t2Rounds: 9, t1Kills: 83, t1Deaths: 69, t1Assists: 29, t2Kills: 69, t2Deaths: 83, t2Assists: 22 }
+                { map: 'Sunset', winnerOverride: '', t1Rounds: 11, t2Rounds: 13, t1Acs: 204, t1Kills: 85, t1Deaths: 91, t1Assists: 27, t2Acs: 219, t2Kills: 91, t2Deaths: 85, t2Assists: 35 },
+                { map: 'Ascent', winnerOverride: '', t1Rounds: 13, t2Rounds: 10, t1Acs: 221, t1Kills: 86, t1Deaths: 76, t1Assists: 32, t2Acs: 193, t2Kills: 76, t2Deaths: 86, t2Assists: 25 },
+                { map: 'Icebox', winnerOverride: '', t1Rounds: 13, t2Rounds: 9, t1Acs: 223, t1Kills: 83, t1Deaths: 69, t1Assists: 29, t2Acs: 188, t2Kills: 69, t2Deaths: 83, t2Assists: 22 }
             ];
             state.matches['RR_R2_M2'] = [
-                { map: 'Bind', winnerOverride: '', t1Rounds: 13, t2Rounds: 6, t1Kills: 76, t1Deaths: 51, t1Assists: 29, t2Kills: 51, t2Deaths: 76, t2Assists: 17 },
-                { map: 'Haven', winnerOverride: '', t1Rounds: 13, t2Rounds: 8, t1Kills: 80, t1Deaths: 62, t1Assists: 31, t2Kills: 62, t2Deaths: 80, t2Assists: 20 },
+                { map: 'Bind', winnerOverride: '', t1Rounds: 13, t2Rounds: 6, t1Acs: 238, t1Kills: 76, t1Deaths: 51, t1Assists: 29, t2Acs: 169, t2Kills: 51, t2Deaths: 76, t2Assists: 17 },
+                { map: 'Haven', winnerOverride: '', t1Rounds: 13, t2Rounds: 8, t1Acs: 227, t1Kills: 80, t1Deaths: 62, t1Assists: 31, t2Acs: 181, t2Kills: 62, t2Deaths: 80, t2Assists: 20 },
                 createEmptyMap()
             ];
             state.matches['RR_R3_M1'] = [
-                { map: 'Lotus', winnerOverride: '', t1Rounds: 13, t2Rounds: 5, t1Kills: 74, t1Deaths: 46, t1Assists: 27, t2Kills: 46, t2Deaths: 74, t2Assists: 15 },
-                { map: 'Split', winnerOverride: '', t1Rounds: 13, t2Rounds: 7, t1Kills: 78, t1Deaths: 55, t1Assists: 28, t2Kills: 55, t2Deaths: 78, t2Assists: 18 },
+                { map: 'Lotus', winnerOverride: '', t1Rounds: 13, t2Rounds: 5, t1Acs: 244, t1Kills: 74, t1Deaths: 46, t1Assists: 27, t2Acs: 162, t2Kills: 46, t2Deaths: 74, t2Assists: 15 },
+                { map: 'Split', winnerOverride: '', t1Rounds: 13, t2Rounds: 7, t1Acs: 234, t1Kills: 78, t1Deaths: 55, t1Assists: 28, t2Acs: 174, t2Kills: 55, t2Deaths: 78, t2Assists: 18 },
                 createEmptyMap()
             ];
             state.matches['RR_R3_M2'] = [
-                { map: 'Abyss', winnerOverride: '', t1Rounds: 13, t2Rounds: 11, t1Kills: 88, t1Deaths: 81, t1Assists: 32, t2Kills: 81, t2Deaths: 88, t2Assists: 28 },
-                { map: 'Sunset', winnerOverride: '', t1Rounds: 9, t2Rounds: 13, t1Kills: 77, t1Deaths: 84, t1Assists: 24, t2Kills: 84, t2Deaths: 77, t2Assists: 31 },
-                { map: 'Ascent', winnerOverride: '', t1Rounds: 13, t2Rounds: 10, t1Kills: 85, t1Deaths: 75, t1Assists: 30, t2Kills: 75, t2Deaths: 85, t2Assists: 26 }
+                { map: 'Abyss', winnerOverride: '', t1Rounds: 13, t2Rounds: 11, t1Acs: 217, t1Kills: 88, t1Deaths: 81, t1Assists: 32, t2Acs: 202, t2Kills: 81, t2Deaths: 88, t2Assists: 28 },
+                { map: 'Sunset', winnerOverride: '', t1Rounds: 9, t2Rounds: 13, t1Acs: 191, t1Kills: 77, t1Deaths: 84, t1Assists: 24, t2Acs: 216, t2Kills: 84, t2Deaths: 77, t2Assists: 31 },
+                { map: 'Ascent', winnerOverride: '', t1Rounds: 13, t2Rounds: 10, t1Acs: 220, t1Kills: 85, t1Deaths: 75, t1Assists: 30, t2Acs: 194, t2Kills: 75, t2Deaths: 85, t2Assists: 26 }
             ];
             state.matches['FINALS'] = [
-                { map: 'Ascent', winnerOverride: '', t1Rounds: 13, t2Rounds: 10, t1Kills: 86, t1Deaths: 76, t1Assists: 31, t2Kills: 76, t2Deaths: 86, t2Assists: 27 },
-                { map: 'Bind', winnerOverride: '', t1Rounds: 11, t2Rounds: 13, t1Kills: 83, t1Deaths: 89, t1Assists: 28, t2Kills: 89, t2Deaths: 83, t2Assists: 34 },
-                { map: 'Haven', winnerOverride: '', t1Rounds: 14, t2Rounds: 12, t1Kills: 96, t1Deaths: 90, t1Assists: 36, t2Kills: 90, t2Deaths: 96, t2Assists: 32 }
+                { map: 'Ascent', winnerOverride: '', t1Rounds: 13, t2Rounds: 10, t1Acs: 222, t1Kills: 86, t1Deaths: 76, t1Assists: 31, t2Acs: 195, t2Kills: 76, t2Deaths: 86, t2Assists: 27 },
+                { map: 'Bind', winnerOverride: '', t1Rounds: 11, t2Rounds: 13, t1Acs: 203, t1Kills: 83, t1Deaths: 89, t1Assists: 28, t2Acs: 218, t2Kills: 89, t2Deaths: 83, t2Assists: 34 },
+                { map: 'Haven', winnerOverride: '', t1Rounds: 14, t2Rounds: 12, t1Acs: 229, t1Kills: 96, t1Deaths: 90, t1Assists: 36, t2Acs: 214, t2Kills: 90, t2Deaths: 96, t2Assists: 32 }
             ];
 
             renderTeamInputs();
