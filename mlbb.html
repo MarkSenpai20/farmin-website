@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MLBB Tournament Manager — Automated System</title>
+    <style>
+        /* Minimalist Brutalist Black & White Theme */
+        :root {
+            --bg: #ffffff;
+            --fg: #000000;
+            --muted: #f5f5f5;
+            --border: #000000;
+            --subtle-border: #cccccc;
+            --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--fg);
+            font-family: var(--font-sans);
+            font-size: 13px;
+            line-height: 1.4;
+            padding: 20px;
+            max-width: 1360px;
+            margin: 0 auto;
+        }
+
+        /* Header & Controls */
+        header {
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        h1 {
+            font-family: var(--font-mono);
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: -0.5px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: #444;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: var(--bg);
+            color: var(--fg);
+            border: 1px solid var(--border);
+            padding: 8px 14px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.1s, color 0.1s;
+        }
+
+        button:hover {
+            background: var(--fg);
+            color: var(--bg);
+        }
+
+        button.primary {
+            background: var(--fg);
+            color: var(--bg);
+        }
+
+        button.primary:hover {
+            background: #333333;
+        }
+
+        /* Layout Sections */
+        section {
+            border: 1px solid var(--border);
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .section-header {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Team Inputs */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+        }
+
+        .input-box {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .input-box label {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--fg);
+            font-family: var(--font-mono);
+            font-size: 12px;
+            padding: 6px 8px;
+        }
+
+        input:focus, select:focus {
+            outline: 2px solid var(--fg);
+            outline-offset: -2px;
+        }
+
+        /* Tables */
+        .table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: var(--font-mono);
+            font-size: 12px;
+        }
+
+        th, td {
+            border: 1px solid var(--border);
+            padding: 6px 8px;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        th {
+            background: var(--muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+        }
+
+        td input[type="number"], td input[type="text"], td select {
+            border: none;
+            padding: 4px;
+            background: transparent;
+        }
+
+        td input[type="number"] {
+            text-align: right;
+        }
+
+        .num { text-align: right; }
+        .center { text-align: center; }
+        .bold { font-weight: 700; }
+
+        /* Mobile Input Sizing & Responsive Layout */
+        td input[type="number"] {
+            min-width: 54px;
+        }
+
+        td input[type="text"] {
+            min-width: 64px;
+        }
+
+        td select {
+            min-width: 110px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+
+            header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+
+            .toolbar {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                width: 100%;
+            }
+
+            .toolbar button.primary {
+                grid-column: span 2;
+            }
+
+            button {
+                padding: 12px 14px;
+                font-size: 12px;
+            }
+
+            section {
+                padding: 12px;
+                margin-bottom: 16px;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+
+            .team-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            input[type="text"], input[type="number"], select {
+                font-size: 16px; /* Prevents iOS auto-zoom on focus */
+                padding: 8px;
+            }
+
+            td input[type="number"], td input[type="text"], td select {
+                font-size: 14px;
+                padding: 8px 6px;
+            }
+
+            th, td {
+                padding: 8px 6px;
+            }
+
+            .series-card {
+                padding: 10px;
+            }
+
+            .series-top {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .score-pill {
+                align-self: flex-start;
+            }
+        }
+
+        /* Series Cards */
+        .series-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 20px;
+            min-width: 0;
+        }
+
+        .series-card {
+            border: 1px solid var(--border);
+            padding: 12px;
+            min-width: 0;
+            max-width: 100%;
+            overflow: hidden;
+        }
+
+        .series-top {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--subtle-border);
+            font-family: var(--font-mono);
+        }
+
+        .score-pill {
+            border: 1px solid var(--border);
+            padding: 2px 8px;
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        .score-pill.done {
+            background: var(--fg);
+            color: var(--bg);
+        }
+
+        .game-disabled {
+            opacity: 0.35;
+            pointer-events: none;
+            background: var(--muted);
+        }
+
+        .note {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: #444;
+            margin-top: 8px;
+        }
+
+        /* Custom Modal Notification (No alert/confirm) */
+        #modalOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 16px;
+        }
+
+        #modalBox {
+            background: var(--bg);
+            border: 2px solid var(--border);
+            padding: 20px;
+            max-width: 400px;
+            width: 100%;
+            font-family: var(--font-mono);
+        }
+
+        #modalTitle {
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 6px;
+        }
+
+        #modalBody {
+            font-size: 12px;
+            margin-bottom: 16px;
+        }
+
+        #modalActions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div>
+            <h1>MLBB Tournament System</h1>
+            <div class="subtitle">Automated 3-Team Round Robin (Bo3) &amp; Grand Finals (Bo5)</div>
+        </div>
+        <div class="toolbar">
+            <button onclick="loadDemoData()">Load Demo Data</button>
+            <button onclick="promptReset()">Reset All</button>
+            <button class="primary" onclick="exportCSV()">Export CSV</button>
+        </div>
+    </header>
+
+    <!-- 01. TEAM REGISTRATION -->
+    <section>
+        <div class="section-header">
+            <span>01. Participating Teams</span>
+            <span class="subtitle">Auto-syncs across all brackets</span>
+        </div>
+        <div class="team-grid">
+            <div class="input-box">
+                <label for="nameA">Team A</label>
+                <input type="text" id="nameA" value="Team Alpha" oninput="recalculate()">
+            </div>
+            <div class="input-box">
+                <label for="nameB">Team B</label>
+                <input type="text" id="nameB" value="Team Bravo" oninput="recalculate()">
+            </div>
+            <div class="input-box">
+                <label for="nameC">Team C</label>
+                <input type="text" id="nameC" value="Team Charlie" oninput="recalculate()">
+            </div>
+        </div>
+    </section>
+
+    <!-- 02. AUTOMATED STANDINGS -->
+    <section>
+        <div class="section-header">
+            <span>02. Live Group Standings</span>
+            <span class="subtitle">Top 2 Advance to Bo5 Finals</span>
+        </div>
+        <div class="table-wrap">
+            <table id="standingsTable">
+                <thead>
+                    <tr>
+                        <th class="center">Seed</th>
+                        <th>Team Name</th>
+                        <th class="center">Series W-L</th>
+                        <th class="center">Games W-L</th>
+                        <th class="center">Net Games</th>
+                        <th class="center">Points</th>
+                        <th class="num">Total Kills</th>
+                        <th class="num">Total Gold</th>
+                        <th class="center">Towers</th>
+                        <th class="center">Lord / Turtle</th>
+                        <th class="center">Total Win Time</th>
+                        <th class="center">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="standingsBody"></tbody>
+            </table>
+        </div>
+        <div class="note">
+            Rules: 2-0 Win = 3 pts | 2-1 Win = 2 pts | 1-2 Loss = 1 pt | 0-2 Loss = 0 pts. 
+            Tiebreakers: 1. Points &rarr; 2. Net Game Wins &rarr; 3. Head-to-Head (2-way) &rarr; 4. Shortest Total Win Time &rarr; 5. Total Towers &rarr; 6. Total Gold.
+        </div>
+    </section>
+
+    <!-- 03. ROUND ROBIN GAME-BY-GAME ENTRY -->
+    <section>
+        <div class="section-header">
+            <span>03. Round Robin Match Logs (Best of 3)</span>
+            <span class="subtitle">Enter individual game stats; series scores auto-compute</span>
+        </div>
+        <div class="series-grid" id="rrContainer"></div>
+    </section>
+
+    <!-- 04. GRAND FINALS (BEST OF 5) -->
+    <section>
+        <div class="section-header">
+            <span>04. Grand Finals (Best of 5)</span>
+            <span id="finalsChampionBadge" class="score-pill">Awaiting Group Stage</span>
+        </div>
+        <div id="finalsContainer"></div>
+    </section>
+
+    <!-- Custom Modal -->
+    <div id="modalOverlay">
+        <div id="modalBox">
+            <div id="modalTitle">Notice</div>
+            <div id="modalBody"></div>
+            <div id="modalActions"></div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * State Management
+         * Stores all raw game entries so series, standings, tiebreakers, and finals auto-compute deterministically.
+         * Uses dual-layer persistence (localStorage + window.name fallback) so accidental refreshes always restore state.
+         */
+        const STORAGE_KEY = 'mlbb_auto_tournament_v1';
+
+        const defaultState = () => ({
+            teams: { A: 'Team Alpha', B: 'Team Bravo', C: 'Team Charlie' },
+            rr: [
+                createEmptySeries('rr1', 'A', 'B', 3),
+                createEmptySeries('rr2', 'B', 'C', 3),
+                createEmptySeries('rr3', 'A', 'C', 3)
+            ],
+            finals: createEmptySeries('finals', 'SEED1', 'SEED2', 5)
+        });
+
+        function createEmptySeries(id, t1, t2, maxGames) {
+            const games = [];
+            for (let i = 0; i < maxGames; i++) {
+                games.push({
+                    winner: '', // '' | '1' | '2'
+                    duration: '', // 'MM:SS'
+                    t1Kills: 0, t2Kills: 0,
+                    t1Gold: 0, t2Gold: 0,
+                    t1Towers: 0, t2Towers: 0,
+                    t1Objectives: 0, t2Objectives: 0 // Combined Lord + Turtle
+                });
+            }
+            return { id, t1, t2, maxGames, games };
+        }
+
+        let state = loadState();
+
+        function loadState() {
+            let parsed = null;
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) parsed = JSON.parse(raw);
+            } catch (e) { /* ignore localStorage errors in restricted frames */ }
+
+            // Fallback to window.name if localStorage is blocked or cleared by iframe sandbox
+            if (!parsed && window.name && window.name.startsWith('MLBB_STATE:')) {
+                try {
+                    parsed = JSON.parse(window.name.slice('MLBB_STATE:'.length));
+                } catch (e) { /* ignore parse errors */ }
+            }
+
+            if (parsed && parsed.teams && parsed.rr) {
+                // Ensure Finals matches Bo5 configuration if loading older saved state
+                if (parsed.finals) {
+                    parsed.finals.maxGames = 5;
+                    while (parsed.finals.games.length < 5) {
+                        parsed.finals.games.push({
+                            winner: '',
+                            duration: '',
+                            t1Kills: 0, t2Kills: 0,
+                            t1Gold: 0, t2Gold: 0,
+                            t1Towers: 0, t2Towers: 0,
+                            t1Objectives: 0, t2Objectives: 0
+                        });
+                    }
+                }
+                return parsed;
+            }
+            return defaultState();
+        }
+
+        function saveState() {
+            const serialized = JSON.stringify(state);
+            try {
+                localStorage.setItem(STORAGE_KEY, serialized);
+            } catch (e) { /* ignore storage quota/sandbox issues */ }
+            try {
+                window.name = 'MLBB_STATE:' + serialized;
+            } catch (e) { /* ignore window.name errors */ }
+        }
+
+        window.addEventListener('beforeunload', saveState);
+        window.addEventListener('pagehide', saveState);
+
+        function parseDurationToSeconds(str) {
+            if (!str) return 0;
+            const cleaned = String(str).trim();
+            if (!cleaned) return 0;
+            if (cleaned.includes(':')) {
+                const parts = cleaned.split(':');
+                const mins = parseInt(parts[0], 10) || 0;
+                const secs = parseInt(parts[1], 10) || 0;
+                return Math.max(0, mins * 60 + secs);
+            }
+            const num = parseInt(cleaned, 10);
+            return isNaN(num) ? 0 : Math.max(0, num * 60);
+        }
+
+        function formatSeconds(totalSec) {
+            const sec = Math.max(0, Math.floor(totalSec || 0));
+            const m = Math.floor(sec / 60);
+            const s = sec % 60;
+            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        /**
+         * Evaluates a single Bo3 or Bo5 series from its raw game rows.
+         * Automatically locks subsequent games once a team reaches the win threshold.
+         */
+        function evaluateSeries(series) {
+            const winTarget = Math.ceil(series.maxGames / 2);
+            let t1Wins = 0, t2Wins = 0;
+            let t1Kills = 0, t2Kills = 0;
+            let t1Gold = 0, t2Gold = 0;
+            let t1Towers = 0, t2Towers = 0;
+            let t1Obj = 0, t2Obj = 0;
+            let t1WinTime = 0, t2WinTime = 0;
+            let seriesWinner = '';
+
+            const evaluatedGames = series.games.map((g) => {
+                const alreadyClinched = t1Wins >= winTarget || t2Wins >= winTarget;
+                const disabled = alreadyClinched;
+                const effectiveWinner = disabled ? '' : g.winner;
+
+                if (!disabled) {
+                    const durSec = parseDurationToSeconds(g.duration);
+                    t1Kills += g.t1Kills;
+                    t2Kills += g.t2Kills;
+                    t1Gold += g.t1Gold;
+                    t2Gold += g.t2Gold;
+                    t1Towers += g.t1Towers;
+                    t2Towers += g.t2Towers;
+                    t1Obj += g.t1Objectives;
+                    t2Obj += g.t2Objectives;
+
+                    if (effectiveWinner === '1') {
+                        t1Wins++;
+                        t1WinTime += durSec;
+                    } else if (effectiveWinner === '2') {
+                        t2Wins++;
+                        t2WinTime += durSec;
+                    }
+                }
+
+                return { ...g, disabled, effectiveWinner };
+            });
+
+            if (t1Wins >= winTarget) seriesWinner = '1';
+            else if (t2Wins >= winTarget) seriesWinner = '2';
+
+            return {
+                t1Wins, t2Wins,
+                t1Kills, t2Kills,
+                t1Gold, t2Gold,
+                t1Towers, t2Towers,
+                t1Obj, t2Obj,
+                t1WinTime, t2WinTime,
+                seriesWinner,
+                evaluatedGames
+            };
+        }
+
+        /**
+         * Master Recalculation Loop
+         * Computes standings, tiebreakers, round-robin cards, and grand finals seeding.
+         */
+        function recalculate() {
+            state.teams.A = document.getElementById('nameA').value.trim() || 'Team A';
+            state.teams.B = document.getElementById('nameB').value.trim() || 'Team B';
+            state.teams.C = document.getElementById('nameC').value.trim() || 'Team C';
+            saveState();
+
+            const stats = {
+                A: { key: 'A', name: state.teams.A, seriesW: 0, seriesL: 0, gamesW: 0, gamesL: 0, points: 0, kills: 0, gold: 0, towers: 0, obj: 0, winTime: 0, h2h: {} },
+                B: { key: 'B', name: state.teams.B, seriesW: 0, seriesL: 0, gamesW: 0, gamesL: 0, points: 0, kills: 0, gold: 0, towers: 0, obj: 0, winTime: 0, h2h: {} },
+                C: { key: 'C', name: state.teams.C, seriesW: 0, seriesL: 0, gamesW: 0, gamesL: 0, points: 0, kills: 0, gold: 0, towers: 0, obj: 0, winTime: 0, h2h: {} }
+            };
+
+            state.rr.forEach((series) => {
+                const ev = evaluateSeries(series);
+                const t1 = stats[series.t1];
+                const t2 = stats[series.t2];
+
+                t1.gamesW += ev.t1Wins;
+                t1.gamesL += ev.t2Wins;
+                t1.kills += ev.t1Kills;
+                t1.gold += ev.t1Gold;
+                t1.towers += ev.t1Towers;
+                t1.obj += ev.t1Obj;
+                t1.winTime += ev.t1WinTime;
+
+                t2.gamesW += ev.t2Wins;
+                t2.gamesL += ev.t1Wins;
+                t2.kills += ev.t2Kills;
+                t2.gold += ev.t2Gold;
+                t2.towers += ev.t2Towers;
+                t2.obj += ev.t2Obj;
+                t2.winTime += ev.t2WinTime;
+
+                if (ev.seriesWinner === '1') {
+                    t1.seriesW++;
+                    t2.seriesL++;
+                    t1.h2h[series.t2] = 1;
+                    t2.h2h[series.t1] = -1;
+                    if (ev.t2Wins === 0) {
+                        t1.points += 3;
+                    } else {
+                        t1.points += 2;
+                        t2.points += 1;
+                    }
+                } else if (ev.seriesWinner === '2') {
+                    t2.seriesW++;
+                    t1.seriesL++;
+                    t2.h2h[series.t1] = 1;
+                    t1.h2h[series.t2] = -1;
+                    if (ev.t1Wins === 0) {
+                        t2.points += 3;
+                    } else {
+                        t2.points += 2;
+                        t1.points += 1;
+                    }
+                }
+            });
+
+            const ranked = Object.values(stats).sort((a, b) => {
+                if (b.points !== a.points) return b.points - a.points;
+                const netA = a.gamesW - a.gamesL;
+                const netB = b.gamesW - b.gamesL;
+                if (netB !== netA) return netB - netA;
+
+                // Head-to-head applies if only 2 teams share this exact points & net games tier
+                const sameTierCount = Object.values(stats).filter(
+                    t => t.points === a.points && (t.gamesW - t.gamesL) === netA
+                ).length;
+                if (sameTierCount === 2 && a.h2h[b.key]) {
+                    return -a.h2h[b.key];
+                }
+
+                // Shortest total win duration (only when both teams have recorded win time)
+                if (a.winTime !== b.winTime) {
+                    if (a.winTime === 0) return 1;
+                    if (b.winTime === 0) return -1;
+                    return a.winTime - b.winTime;
+                }
+
+                if (b.towers !== a.towers) return b.towers - a.towers;
+                return b.gold - a.gold;
+            });
+
+            renderStandings(ranked);
+            renderRoundRobin();
+            renderFinals(ranked[0], ranked[1]);
+        }
+
+        function renderStandings(ranked) {
+            const tbody = document.getElementById('standingsBody');
+            tbody.innerHTML = ranked.map((t, idx) => {
+                const net = t.gamesW - t.gamesL;
+                const netLabel = net > 0 ? `+${net}` : `${net}`;
+                const statusLabel = idx < 2 ? 'ADVANCES (FINALS)' : 'ELIMINATED';
+                return `
+                    <tr>
+                        <td class="center bold">#${idx + 1}</td>
+                        <td class="bold">${escapeHtml(t.name)}</td>
+                        <td class="center">${t.seriesW}–${t.seriesL}</td>
+                        <td class="center">${t.gamesW}–${t.gamesL}</td>
+                        <td class="center">${netLabel}</td>
+                        <td class="center bold">${t.points}</td>
+                        <td class="num">${t.kills}</td>
+                        <td class="num">${t.gold.toLocaleString()}</td>
+                        <td class="center">${t.towers}</td>
+                        <td class="center">${t.obj}</td>
+                        <td class="center">${formatSeconds(t.winTime)}</td>
+                        <td class="center bold">${statusLabel}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderRoundRobin() {
+            const container = document.getElementById('rrContainer');
+            container.innerHTML = '';
+
+            state.rr.forEach((series, sIdx) => {
+                const ev = evaluateSeries(series);
+                const name1 = state.teams[series.t1];
+                const name2 = state.teams[series.t2];
+                const isDone = ev.seriesWinner !== '';
+                const statusText = isDone
+                    ? `FINAL: ${ev.seriesWinner === '1' ? name1 : name2} (${ev.t1Wins}–${ev.t2Wins})`
+                    : `IN PROGRESS (${ev.t1Wins}–${ev.t2Wins})`;
+
+                const card = document.createElement('div');
+                card.className = 'series-card';
+                card.innerHTML = `
+                    <div class="series-top">
+                        <strong>SERIES ${sIdx + 1}: ${escapeHtml(name1)} vs ${escapeHtml(name2)}</strong>
+                        <span class="score-pill ${isDone ? 'done' : ''}">${escapeHtml(statusText)}</span>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Game</th>
+                                    <th>Winner</th>
+                                    <th>Duration (MM:SS)</th>
+                                    <th class="num">${escapeHtml(name1)} Kills</th>
+                                    <th class="num">${escapeHtml(name2)} Kills</th>
+                                    <th class="num">${escapeHtml(name1)} Gold</th>
+                                    <th class="num">${escapeHtml(name2)} Gold</th>
+                                    <th class="num">${escapeHtml(name1)} Towers</th>
+                                    <th class="num">${escapeHtml(name2)} Towers</th>
+                                    <th class="num">${escapeHtml(name1)} Lord/Turtle</th>
+                                    <th class="num">${escapeHtml(name2)} Lord/Turtle</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${ev.evaluatedGames.map((g, gIdx) => renderGameRow('rr', sIdx, gIdx, g, name1, name2)).join('')}
+                                <tr style="background: var(--muted); font-weight: 700;">
+                                    <td colspan="2">SERIES TOTALS</td>
+                                    <td class="center">Win Time: ${formatSeconds(ev.t1WinTime)} / ${formatSeconds(ev.t2WinTime)}</td>
+                                    <td class="num">${ev.t1Kills}</td>
+                                    <td class="num">${ev.t2Kills}</td>
+                                    <td class="num">${ev.t1Gold.toLocaleString()}</td>
+                                    <td class="num">${ev.t2Gold.toLocaleString()}</td>
+                                    <td class="num">${ev.t1Towers}</td>
+                                    <td class="num">${ev.t2Towers}</td>
+                                    <td class="num">${ev.t1Obj}</td>
+                                    <td class="num">${ev.t2Obj}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderFinals(seed1, seed2) {
+            const container = document.getElementById('finalsContainer');
+            const badge = document.getElementById('finalsChampionBadge');
+            const ev = evaluateSeries(state.finals);
+
+            const name1 = `Seed #1: ${seed1.name}`;
+            const name2 = `Seed #2: ${seed2.name}`;
+
+            if (ev.seriesWinner === '1') {
+                badge.textContent = `CHAMPION: ${seed1.name} (${ev.t1Wins}–${ev.t2Wins})`;
+                badge.classList.add('done');
+            } else if (ev.seriesWinner === '2') {
+                badge.textContent = `CHAMPION: ${seed2.name} (${ev.t2Wins}–${ev.t1Wins})`;
+                badge.classList.add('done');
+            } else {
+                badge.textContent = `SCORE: ${ev.t1Wins}–${ev.t2Wins}`;
+                badge.classList.remove('done');
+            }
+
+            container.innerHTML = `
+                <div class="series-card">
+                    <div class="series-top">
+                        <strong>GRAND FINALS (Bo5): ${escapeHtml(name1)} vs ${escapeHtml(name2)}</strong>
+                        <span class="subtitle">First to 3 Wins</span>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Game</th>
+                                    <th>Winner</th>
+                                    <th>Duration (MM:SS)</th>
+                                    <th class="num">${escapeHtml(seed1.name)} Kills</th>
+                                    <th class="num">${escapeHtml(seed2.name)} Kills</th>
+                                    <th class="num">${escapeHtml(seed1.name)} Gold</th>
+                                    <th class="num">${escapeHtml(seed2.name)} Gold</th>
+                                    <th class="num">${escapeHtml(seed1.name)} Towers</th>
+                                    <th class="num">${escapeHtml(seed2.name)} Towers</th>
+                                    <th class="num">${escapeHtml(seed1.name)} Lord/Turtle</th>
+                                    <th class="num">${escapeHtml(seed2.name)} Lord/Turtle</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${ev.evaluatedGames.map((g, gIdx) => renderGameRow('finals', 0, gIdx, g, seed1.name, seed2.name)).join('')}
+                                <tr style="background: var(--muted); font-weight: 700;">
+                                    <td colspan="2">FINALS TOTALS</td>
+                                    <td class="center">Win Time: ${formatSeconds(ev.t1WinTime)} / ${formatSeconds(ev.t2WinTime)}</td>
+                                    <td class="num">${ev.t1Kills}</td>
+                                    <td class="num">${ev.t2Kills}</td>
+                                    <td class="num">${ev.t1Gold.toLocaleString()}</td>
+                                    <td class="num">${ev.t2Gold.toLocaleString()}</td>
+                                    <td class="num">${ev.t1Towers}</td>
+                                    <td class="num">${ev.t2Towers}</td>
+                                    <td class="num">${ev.t1Obj}</td>
+                                    <td class="num">${ev.t2Obj}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderGameRow(stage, sIdx, gIdx, g, name1, name2) {
+            return `
+                <tr class="${g.disabled ? 'game-disabled' : ''}">
+                    <td class="bold">Game ${gIdx + 1}</td>
+                    <td>
+                        <select onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 'winner', this.value, true)">
+                            <option value="" ${g.winner === '' ? 'selected' : ''}>--</option>
+                            <option value="1" ${g.winner === '1' ? 'selected' : ''}>${escapeHtml(name1)}</option>
+                            <option value="2" ${g.winner === '2' ? 'selected' : ''}>${escapeHtml(name2)}</option>
+                        </select>
+                    </td>
+                    <td><input type="text" inputmode="numeric" placeholder="14:30" value="${escapeHtml(g.duration)}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 'duration', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 'duration', this.value, true)"></td>
+                    <td><input type="number" inputmode="numeric" min="0" value="${g.t1Kills}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Kills', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Kills', this.value, true)"></td>
+                    <td><input type="number" inputmode="numeric" min="0" value="${g.t2Kills}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Kills', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Kills', this.value, true)"></td>
+                    <td><input type="number" inputmode="numeric" min="0" value="${g.t1Gold}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Gold', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Gold', this.value, true)"></td>
+                    <td><input type="number" inputmode="numeric" min="0" value="${g.t2Gold}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Gold', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Gold', this.value, true)"></td>
+                    <td><input type="number" inputmode="numeric" min="0" max="9" value="${g.t1Towers}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Towers', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Towers', this.value, true)"></td>
+                    <td><input type="number" inputmode="numeric" min="0" max="9" value="${g.t2Towers}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Towers', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Towers', this.value, true)"></td>
+                    <td><input type="number" inputmode="numeric" min="0" value="${g.t1Objectives}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Objectives', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't1Objectives', this.value, true)"></td>
+                    <td><input type="number" inputmode="numeric" min="0" value="${g.t2Objectives}" oninput="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Objectives', this.value, false)" onchange="updateGameField('${stage}', ${sIdx}, ${gIdx}, 't2Objectives', this.value, true)"></td>
+                </tr>
+            `;
+        }
+
+        function updateGameField(stage, sIdx, gIdx, field, value, shouldRender = true) {
+            const targetSeries = stage === 'rr' ? state.rr[sIdx] : state.finals;
+            if (field === 'winner' || field === 'duration') {
+                targetSeries.games[gIdx][field] = value;
+            } else {
+                targetSeries.games[gIdx][field] = Math.max(0, parseInt(value, 10) || 0);
+            }
+            if (shouldRender) {
+                recalculate();
+            } else {
+                saveState();
+            }
+        }
+
+        /**
+         * Comprehensive CSV Export (Standings + Every Round Robin Game + Grand Finals Games)
+         */
+        function exportCSV() {
+            const rows = [];
+            const csvEscape = (val) => `"${String(val).replace(/"/g, '""')}"`;
+
+            rows.push(['MLBB TOURNAMENT AUTOMATED REPORT']);
+            rows.push(['Generated', new Date().toLocaleString()]);
+            rows.push([]);
+
+            // 1. Group Standings
+            rows.push(['GROUP STAGE STANDINGS (BO3 ROUND ROBIN)']);
+            rows.push(['Seed', 'Team Name', 'Series W-L', 'Games W-L', 'Net Games', 'Points', 'Total Kills', 'Total Gold', 'Towers Destroyed', 'Lord/Turtle', 'Total Win Duration', 'Status']);
+            document.querySelectorAll('#standingsBody tr').forEach(tr => {
+                const cols = Array.from(tr.querySelectorAll('td')).map(td => csvEscape(td.innerText.trim()));
+                rows.push(cols);
+            });
+            rows.push([]);
+
+            // 2. Round Robin Game-by-Game Logs
+            rows.push(['ROUND ROBIN MATCH LOGS']);
+            rows.push(['Series', 'Game', 'Team 1', 'Team 2', 'Winner', 'Duration', 'T1 Kills', 'T2 Kills', 'T1 Gold', 'T2 Gold', 'T1 Towers', 'T2 Towers', 'T1 Objectives', 'T2 Objectives']);
+
+            state.rr.forEach((series, sIdx) => {
+                const ev = evaluateSeries(series);
+                const n1 = state.teams[series.t1];
+                const n2 = state.teams[series.t2];
+                ev.evaluatedGames.forEach((g, gIdx) => {
+                    if (!g.disabled && g.effectiveWinner) {
+                        const winName = g.effectiveWinner === '1' ? n1 : n2;
+                        rows.push([
+                            `Series ${sIdx + 1}`, `Game ${gIdx + 1}`, n1, n2, winName, g.duration || '00:00',
+                            g.t1Kills, g.t2Kills, g.t1Gold, g.t2Gold, g.t1Towers, g.t2Towers, g.t1Objectives, g.t2Objectives
+                        ].map(csvEscape));
+                    }
+                });
+            });
+            rows.push([]);
+
+            // 3. Grand Finals Logs
+            rows.push(['GRAND FINALS LOGS (BO5)']);
+            const seed1Name = document.querySelector('#standingsBody tr:nth-child(1) td:nth-child(2)')?.innerText || 'Seed #1';
+            const seed2Name = document.querySelector('#standingsBody tr:nth-child(2) td:nth-child(2)')?.innerText || 'Seed #2';
+            const finalsEv = evaluateSeries(state.finals);
+
+            rows.push(['Stage', 'Game', 'Seed #1', 'Seed #2', 'Winner', 'Duration', 'S1 Kills', 'S2 Kills', 'S1 Gold', 'S2 Gold', 'S1 Towers', 'S2 Towers', 'S1 Objectives', 'S2 Objectives']);
+            finalsEv.evaluatedGames.forEach((g, gIdx) => {
+                if (!g.disabled && g.effectiveWinner) {
+                    const winName = g.effectiveWinner === '1' ? seed1Name : seed2Name;
+                    rows.push([
+                        'Grand Finals', `Game ${gIdx + 1}`, seed1Name, seed2Name, winName, g.duration || '00:00',
+                        g.t1Kills, g.t2Kills, g.t1Gold, g.t2Gold, g.t1Towers, g.t2Towers, g.t1Objectives, g.t2Objectives
+                    ].map(csvEscape));
+                }
+            });
+
+            const csvString = rows.map(r => r.join(',')).join('\n');
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `mlbb_tournament_${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Demo Data for instant testing
+        function loadDemoData() {
+            state = defaultState();
+            state.teams = { A: 'Blacklist', B: 'ECHO', C: 'ONIC PH' };
+            document.getElementById('nameA').value = state.teams.A;
+            document.getElementById('nameB').value = state.teams.B;
+            document.getElementById('nameC').value = state.teams.C;
+
+            // Series 1: A beats B (2-1)
+            state.rr[0].games[0] = { winner: '1', duration: '14:20', t1Kills: 16, t2Kills: 7, t1Gold: 46200, t2Gold: 38100, t1Towers: 8, t2Towers: 2, t1Objectives: 4, t2Objectives: 1 };
+            state.rr[0].games[1] = { winner: '2', duration: '18:45', t1Kills: 11, t2Kills: 19, t1Gold: 52000, t2Gold: 61400, t1Towers: 3, t2Towers: 9, t1Objectives: 2, t2Objectives: 5 };
+            state.rr[0].games[2] = { winner: '1', duration: '13:10', t1Kills: 14, t2Kills: 4, t1Gold: 42500, t2Gold: 33000, t1Towers: 9, t2Towers: 1, t1Objectives: 4, t2Objectives: 0 };
+
+            // Series 2: B beats C (2-0)
+            state.rr[1].games[0] = { winner: '1', duration: '12:50', t1Kills: 18, t2Kills: 5, t1Gold: 41800, t2Gold: 32900, t1Towers: 8, t2Towers: 1, t1Objectives: 3, t2Objectives: 1 };
+            state.rr[1].games[1] = { winner: '1', duration: '15:05', t1Kills: 15, t2Kills: 9, t1Gold: 48900, t2Gold: 41200, t1Towers: 7, t2Towers: 3, t1Objectives: 4, t2Objectives: 2 };
+
+            // Series 3: C beats A (2-0) -> Creates a 3-way tie at 1-1 series record!
+            state.rr[2].games[0] = { winner: '2', duration: '16:00', t1Kills: 8, t2Kills: 17, t1Gold: 45000, t2Gold: 53200, t1Towers: 2, t2Towers: 8, t1Objectives: 1, t2Objectives: 4 };
+            state.rr[2].games[1] = { winner: '2', duration: '14:15', t1Kills: 6, t2Kills: 14, t1Gold: 39400, t2Gold: 46800, t1Towers: 1, t2Towers: 9, t1Objectives: 1, t2Objectives: 4 };
+
+            recalculate();
+        }
+
+        // Custom Modal Dialog (Replaces browser confirm/alert)
+        function promptReset() {
+            const overlay = document.getElementById('modalOverlay');
+            document.getElementById('modalTitle').textContent = 'Confirm Reset';
+            document.getElementById('modalBody').textContent = 'Clear all match data, standings, and reset team names to default?';
+            document.getElementById('modalActions').innerHTML = `
+                <button onclick="closeModal()">Cancel</button>
+                <button class="primary" onclick="executeReset()">Reset Everything</button>
+            `;
+            overlay.style.display = 'flex';
+        }
+
+        function executeReset() {
+            state = defaultState();
+            document.getElementById('nameA').value = state.teams.A;
+            document.getElementById('nameB').value = state.teams.B;
+            document.getElementById('nameC').value = state.teams.C;
+            closeModal();
+            recalculate();
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').style.display = 'none';
+        }
+
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        // Boot
+        window.onload = () => {
+            document.getElementById('nameA').value = state.teams.A;
+            document.getElementById('nameB').value = state.teams.B;
+            document.getElementById('nameC').value = state.teams.C;
+            recalculate();
+        };
+    </script>
+</body>
+</html>
