@@ -425,7 +425,7 @@
     <header>
         <div>
             <h1>Valorant Tournament Manager</h1>
-            <div class="subtitle">4-Team Round Robin (Best of 3) &rarr; Grand Finals (Best of 3)</div>
+            <div class="subtitle">4-Team Single Elimination Bracket &mdash; Semifinals (Bo3) &rarr; Grand Finals (Bo3)</div>
         </div>
         <div class="toolbar">
             <button onclick="loadDemoData()">Load Demo Data</button>
@@ -437,28 +437,28 @@
     <!-- 01. TEAM REGISTRATION -->
     <section>
         <div class="section-header">
-            <span>01. Competing Teams (4 Teams)</span>
-            <span class="subtitle">Auto-Saved on Every Edit</span>
+            <span>01. Competing Teams &amp; Initial Seeding (4 Teams)</span>
+            <span class="subtitle">Match #1: Team 1 vs Team 3 (1:00–3:00) &amp; Match #2: Team 2 vs Team 4 (3:00–5:00) | Auto-Saved</span>
         </div>
         <div class="team-grid" id="teamInputsGrid"></div>
     </section>
 
-    <!-- 02. ROUND ROBIN STANDINGS -->
+    <!-- 02. TOURNAMENT LEADERBOARD -->
     <section>
         <div class="section-header">
-            <span>02. Round Robin Standings (Live Calculated)</span>
-            <span class="subtitle">Top 2 Seeds Advance to Bo3 Grand Finals</span>
+            <span>02. Tournament Performance &amp; Seed Leaderboard</span>
+            <span class="subtitle">Live Aggregated Stats Across Single Elimination Rounds</span>
         </div>
         <div class="table-wrap">
             <table id="standingsTable">
                 <thead>
                     <tr>
-                        <th class="center">Rank</th>
+                        <th class="center">Seed</th>
                         <th>Team Name</th>
+                        <th class="center">Status</th>
                         <th class="center">Series W-L</th>
                         <th class="center">Maps W-L</th>
                         <th class="center">Net Maps</th>
-                        <th class="center">Points</th>
                         <th class="center">Rounds W-L</th>
                         <th class="center">Round Diff</th>
                         <th class="num">Total Kills</th>
@@ -466,46 +466,44 @@
                         <th class="num">Total Assists</th>
                         <th class="center">K/D Ratio</th>
                         <th class="num">Avg ACS</th>
-                        <th class="center">Status</th>
                     </tr>
                 </thead>
                 <tbody id="standingsBody"></tbody>
             </table>
         </div>
         <div class="note">
-            <strong>Scoring &amp; Tiebreakers:</strong> 2–0 Win = <strong>3 pts</strong> | 2–1 Win = <strong>2 pts</strong> | 1–2 Loss = <strong>1 pt</strong> | 0–2 Loss = <strong>0 pts</strong>.<br>
-            Tiebreaker Order: 1. Match Points &rarr; 2. Net Map Wins &rarr; 3. Round Differential &rarr; 4. Head-to-Head (2-way) &rarr; 5. Avg ACS &rarr; 6. Total Kills.
+            <strong>Single Elimination Format:</strong> <strong>Round 1 (Semifinals)</strong> pairs <strong>Team 1 vs Team 3 (Match #1, 1:00–3:00)</strong> and <strong>Team 2 vs Team 4 (Match #2, 3:00–5:00)</strong> in Best-of-3 series. Both winners advance directly to <strong>Round 2: Grand Finals (Match #3, Best of 3)</strong>.
         </div>
     </section>
 
-    <!-- 03. ROUND ROBIN BRACKET TREE -->
+    <!-- 03. SINGLE ELIMINATION BRACKET TREE -->
     <section>
         <div class="section-header">
-            <span>03. Round Robin Bracket Tree</span>
+            <span>03. Single Elimination Bracket Tree</span>
             <span id="championBanner" class="score-pill">Champion: TBD</span>
         </div>
         <div class="bracket-scroll">
             <div class="bracket-board" id="roundRobinTree"></div>
         </div>
         <div class="note">
-            Visualizes all 3 Round Robin Rounds (6 Bo3 series total) feeding the top 2 ranked seeds directly into the <strong>Best-of-3 Grand Finals</strong>.
+            <strong>Automatic Advancement:</strong> Winners of <strong>Match #1</strong> and <strong>Match #2</strong> automatically advance into the <strong>Grand Finals (Match #3)</strong> slot.
         </div>
     </section>
 
-    <!-- 04. ROUND ROBIN MATCH LOGS (6 SERIES x BO3) -->
+    <!-- 04. ROUND 1: SEMIFINALS MATCH LOGS -->
     <section>
         <div class="section-header">
-            <span>04. Round Robin Match Logs (Best of 3)</span>
-            <span class="subtitle">Enter Map Rounds &amp; K/D/A; Map Winners Auto-Detect at 13+ Rounds</span>
+            <span>04. Round 1: Semifinals Match Logs (Best of 3)</span>
+            <span class="subtitle">Enter Map Rounds, ACS &amp; K/D/A; Map Winners Auto-Detect at 13+ Rounds</span>
         </div>
         <div class="series-grid" id="rrMatchesContainer"></div>
     </section>
 
-    <!-- 05. GRAND FINALS (BEST OF 3) -->
+    <!-- 05. ROUND 2: GRAND FINALS -->
     <section>
         <div class="section-header">
-            <span>05. Grand Finals (Best of 3)</span>
-            <span class="subtitle" id="finalsSeedsBadge">Seed #1 vs Seed #2</span>
+            <span>05. Round 2: Grand Finals (Best of 3)</span>
+            <span class="subtitle" id="finalsSeedsBadge">Match #3: Winner of Match #1 vs Winner of Match #2</span>
         </div>
         <div class="series-grid" id="finalsContainer"></div>
     </section>
@@ -521,24 +519,20 @@
 
     <script>
         /**
-         * Valorant 4-Team Tournament Manager (Bo3 Round Robin + Bo3 Grand Finals)
-         * Includes Round Robin Bracket Tree visualization, auto map winner detection,
+         * Valorant 4-Team Single Elimination Tournament Manager (Bo3 Semifinals + Bo3 Grand Finals)
+         * Includes Single Elimination Bracket Tree visualization, auto map winner detection,
          * refresh persistence (localStorage + window.name), and CSV export.
          */
-        const STORAGE_KEY = 'valorant_4team_bo3_v2';
+        const STORAGE_KEY = 'valorant_4team_se_bo3_v1';
 
         const VALORANT_MAPS = [
             '', 'Abyss', 'Ascent', 'Bind', 'Breeze', 'Fracture',
             'Haven', 'Icebox', 'Lotus', 'Pearl', 'Split', 'Sunset'
         ];
 
-        const RR_SCHEDULE = [
-            { id: 'RR_R1_M1', round: 1, code: 'R1-M1', t1Idx: 0, t2Idx: 1 },
-            { id: 'RR_R1_M2', round: 1, code: 'R1-M2', t1Idx: 2, t2Idx: 3 },
-            { id: 'RR_R2_M1', round: 2, code: 'R2-M1', t1Idx: 0, t2Idx: 2 },
-            { id: 'RR_R2_M2', round: 2, code: 'R2-M2', t1Idx: 1, t2Idx: 3 },
-            { id: 'RR_R3_M1', round: 3, code: 'R3-M1', t1Idx: 0, t2Idx: 3 },
-            { id: 'RR_R3_M2', round: 3, code: 'R3-M2', t1Idx: 1, t2Idx: 2 }
+        const SEMI_SCHEDULE = [
+            { id: 'SEMI_M1', code: 'Match #1', time: '1:00 - 3:00', label: 'Semifinal 1', t1Idx: 0, t2Idx: 2 },
+            { id: 'SEMI_M2', code: 'Match #2', time: '3:00 - 5:00', label: 'Semifinal 2', t1Idx: 1, t2Idx: 3 }
         ];
 
         function createEmptyMap() {
@@ -559,11 +553,11 @@
         }
 
         function createDefaultState() {
-            const matches = {};
-            RR_SCHEDULE.forEach(s => {
-                matches[s.id] = [createEmptyMap(), createEmptyMap(), createEmptyMap()];
-            });
-            matches['FINALS'] = [createEmptyMap(), createEmptyMap(), createEmptyMap()];
+            const matches = {
+                SEMI_M1: [createEmptyMap(), createEmptyMap(), createEmptyMap()],
+                SEMI_M2: [createEmptyMap(), createEmptyMap(), createEmptyMap()],
+                FINALS: [createEmptyMap(), createEmptyMap(), createEmptyMap()]
+            };
 
             return {
                 teams: ['Sentinels', 'Paper Rex', 'Fnatic', 'Team Heretics'],
@@ -580,13 +574,13 @@
                 if (raw) parsed = JSON.parse(raw);
             } catch (e) { /* ignore storage errors */ }
 
-            if (!parsed && window.name && window.name.startsWith('VAL_4T:')) {
+            if (!parsed && window.name && window.name.startsWith('VAL_SE_4T:')) {
                 try {
-                    parsed = JSON.parse(window.name.slice('VAL_4T:'.length));
+                    parsed = JSON.parse(window.name.slice('VAL_SE_4T:'.length));
                 } catch (e) { /* ignore parse errors */ }
             }
 
-            if (parsed && Array.isArray(parsed.teams) && parsed.teams.length === 4 && parsed.matches) {
+            if (parsed && Array.isArray(parsed.teams) && parsed.teams.length === 4 && parsed.matches && parsed.matches.SEMI_M1) {
                 return parsed;
             }
             return createDefaultState();
@@ -598,69 +592,70 @@
                 localStorage.setItem(STORAGE_KEY, serialized);
             } catch (e) { /* ignore */ }
             try {
-                window.name = 'VAL_4T:' + serialized;
+                window.name = 'VAL_SE_4T:' + serialized;
             } catch (e) { /* ignore */ }
         }
 
         window.addEventListener('beforeunload', saveState);
         window.addEventListener('pagehide', saveState);
 
-        function detectMapWinner(m) {
-            if (m.winnerOverride === '1' || m.winnerOverride === '2') return m.winnerOverride;
-            const r1 = m.t1Rounds;
-            const r2 = m.t2Rounds;
-            if (r1 >= 13 && r1 >= r2 + 2) return '1';
-            if (r2 >= 13 && r2 >= r1 + 2) return '2';
-            return '';
-        }
-
         function evaluateBo3Series(mapsArr) {
             let t1Maps = 0, t2Maps = 0;
             let t1Rounds = 0, t2Rounds = 0;
-            let t1AcsSum = 0, t1Kills = 0, t1Deaths = 0, t1Assists = 0;
-            let t2AcsSum = 0, t2Kills = 0, t2Deaths = 0, t2Assists = 0;
+            let t1AcsSum = 0, t2AcsSum = 0;
             let playedMaps = 0;
+            let t1Kills = 0, t2Kills = 0;
+            let t1Deaths = 0, t2Deaths = 0;
+            let t1Assists = 0, t2Assists = 0;
             let seriesWinner = '';
 
             const evaluatedMaps = [];
             for (let i = 0; i < 3; i++) {
-                const raw = mapsArr[i] || createEmptyMap();
-                const alreadyDecided = seriesWinner !== '';
-                if (alreadyDecided) {
+                const raw = (mapsArr && mapsArr[i]) ? mapsArr[i] : createEmptyMap();
+                if (seriesWinner !== '') {
                     evaluatedMaps.push({ ...raw, detectedWinner: '', disabled: true });
                     continue;
                 }
 
-                const win = detectMapWinner(raw);
-                if (win === '1') t1Maps++;
-                else if (win === '2') t2Maps++;
+                let detectedWinner = raw.winnerOverride || '';
+                if (!detectedWinner) {
+                    if (raw.t1Rounds >= 13 && raw.t1Rounds >= raw.t2Rounds + 2) detectedWinner = '1';
+                    else if (raw.t2Rounds >= 13 && raw.t2Rounds >= raw.t1Rounds + 2) detectedWinner = '2';
+                }
 
-                const mapPlayed = Boolean(win || raw.t1Rounds > 0 || raw.t2Rounds > 0 || (raw.t1Acs || 0) > 0 || (raw.t2Acs || 0) > 0);
-                if (mapPlayed) playedMaps++;
+                const hasActivity = detectedWinner !== '' || raw.t1Rounds > 0 || raw.t2Rounds > 0 ||
+                    (raw.t1Acs || 0) > 0 || (raw.t2Acs || 0) > 0 ||
+                    raw.t1Kills > 0 || raw.t2Kills > 0;
 
-                t1Rounds += raw.t1Rounds;
-                t2Rounds += raw.t2Rounds;
-                t1AcsSum += (raw.t1Acs || 0);
-                t1Kills += raw.t1Kills;
-                t1Deaths += raw.t1Deaths;
-                t1Assists += raw.t1Assists;
-                t2AcsSum += (raw.t2Acs || 0);
-                t2Kills += raw.t2Kills;
-                t2Deaths += raw.t2Deaths;
-                t2Assists += raw.t2Assists;
+                if (hasActivity) playedMaps++;
+                if (detectedWinner === '1') t1Maps++;
+                else if (detectedWinner === '2') t2Maps++;
+
+                t1Rounds += raw.t1Rounds || 0;
+                t2Rounds += raw.t2Rounds || 0;
+                t1AcsSum += raw.t1Acs || 0;
+                t2AcsSum += raw.t2Acs || 0;
+                t1Kills += raw.t1Kills || 0;
+                t2Kills += raw.t2Kills || 0;
+                t1Deaths += raw.t1Deaths || 0;
+                t2Deaths += raw.t2Deaths || 0;
+                t1Assists += raw.t1Assists || 0;
+                t2Assists += raw.t2Assists || 0;
 
                 if (t1Maps >= 2) seriesWinner = '1';
                 else if (t2Maps >= 2) seriesWinner = '2';
 
-                evaluatedMaps.push({ ...raw, detectedWinner: win, disabled: false });
+                evaluatedMaps.push({ ...raw, detectedWinner, disabled: false });
             }
 
             return {
                 t1Maps, t2Maps,
                 t1Rounds, t2Rounds,
-                t1AcsSum, t2AcsSum, playedMaps,
-                t1Kills, t1Deaths, t1Assists,
-                t2Kills, t2Deaths, t2Assists,
+                t1AcsSum, t2AcsSum,
+                playedMaps,
+                t1Kills, t2Kills,
+                t1Deaths, t2Deaths,
+                t1Assists, t2Assists,
                 seriesWinner,
                 evaluatedMaps
             };
@@ -671,26 +666,25 @@
 
             const stats = state.teams.map((name, idx) => ({
                 idx,
+                seed: idx + 1,
                 name,
+                status: 'ACTIVE',
                 seriesW: 0,
                 seriesL: 0,
                 mapsW: 0,
                 mapsL: 0,
-                points: 0,
                 roundsW: 0,
                 roundsL: 0,
                 acsSum: 0,
                 playedMaps: 0,
                 kills: 0,
                 deaths: 0,
-                assists: 0,
-                h2h: {}
+                assists: 0
             }));
 
-            const evaluatedRR = RR_SCHEDULE.map(sched => {
-                const ev = evaluateBo3Series(state.matches[sched.id]);
-                const s1 = stats[sched.t1Idx];
-                const s2 = stats[sched.t2Idx];
+            function applySeriesStats(t1Idx, t2Idx, ev, isFinals = false) {
+                const s1 = stats[t1Idx];
+                const s2 = stats[t2Idx];
 
                 s1.mapsW += ev.t1Maps;
                 s1.mapsL += ev.t2Maps;
@@ -715,79 +709,64 @@
                 if (ev.seriesWinner === '1') {
                     s1.seriesW++;
                     s2.seriesL++;
-                    s1.h2h[sched.t2Idx] = 1;
-                    s2.h2h[sched.t1Idx] = -1;
-                    if (ev.t2Maps === 0) {
-                        s1.points += 3;
-                    } else {
-                        s1.points += 2;
-                        s2.points += 1;
-                    }
+                    s2.status = isFinals ? 'RUNNER-UP' : 'ELIMINATED';
+                    s1.status = isFinals ? 'CHAMPION' : 'FINALIST';
                 } else if (ev.seriesWinner === '2') {
                     s2.seriesW++;
                     s1.seriesL++;
-                    s2.h2h[sched.t1Idx] = 1;
-                    s1.h2h[sched.t2Idx] = -1;
-                    if (ev.t1Maps === 0) {
-                        s2.points += 3;
-                    } else {
-                        s2.points += 2;
-                        s1.points += 1;
-                    }
+                    s1.status = isFinals ? 'RUNNER-UP' : 'ELIMINATED';
+                    s2.status = isFinals ? 'CHAMPION' : 'FINALIST';
                 }
+            }
 
-                return { ...sched, ev };
+            const evaluatedSemis = SEMI_SCHEDULE.map(sched => {
+                const ev = evaluateBo3Series(state.matches[sched.id]);
+                applySeriesStats(sched.t1Idx, sched.t2Idx, ev, false);
+                const winnerIdx = ev.seriesWinner === '1'
+                    ? sched.t1Idx
+                    : (ev.seriesWinner === '2' ? sched.t2Idx : null);
+                return { ...sched, ev, winnerIdx };
             });
 
-            // Sort standings: Points -> Net Maps -> Round Diff -> Head-to-Head -> Avg ACS -> Total Kills
-            const ranked = [...stats].sort((a, b) => {
-                if (b.points !== a.points) return b.points - a.points;
-                const netMapsA = a.mapsW - a.mapsL;
-                const netMapsB = b.mapsW - b.mapsL;
-                if (netMapsB !== netMapsA) return netMapsB - netMapsA;
-                const rdA = a.roundsW - a.roundsL;
-                const rdB = b.roundsW - b.roundsL;
-                if (rdB !== rdA) return rdB - rdA;
-                if (a.h2h[b.idx]) return -a.h2h[b.idx];
-                const avgAcsA = a.playedMaps > 0 ? a.acsSum / a.playedMaps : 0;
-                const avgAcsB = b.playedMaps > 0 ? b.acsSum / b.playedMaps : 0;
-                if (avgAcsB !== avgAcsA) return avgAcsB - avgAcsA;
-                if (b.kills !== a.kills) return b.kills - a.kills;
-                return a.idx - b.idx;
-            });
+            const m1WinnerIdx = evaluatedSemis[0].winnerIdx;
+            const m2WinnerIdx = evaluatedSemis[1].winnerIdx;
+            const finalsPlayable = (m1WinnerIdx !== null && m2WinnerIdx !== null);
 
-            const seed1 = ranked[0];
-            const seed2 = ranked[1];
             const finalsEval = evaluateBo3Series(state.matches['FINALS']);
+            if (finalsPlayable) {
+                applySeriesStats(m1WinnerIdx, m2WinnerIdx, finalsEval, true);
+            }
 
             const champBanner = document.getElementById('championBanner');
-            if (finalsEval.seriesWinner === '1') {
-                champBanner.textContent = `CHAMPION: ${seed1.name}`;
-                champBanner.classList.add('done');
-            } else if (finalsEval.seriesWinner === '2') {
-                champBanner.textContent = `CHAMPION: ${seed2.name}`;
+            let championIdx = null;
+            if (finalsPlayable && finalsEval.seriesWinner === '1') championIdx = m1WinnerIdx;
+            else if (finalsPlayable && finalsEval.seriesWinner === '2') championIdx = m2WinnerIdx;
+
+            if (championIdx !== null) {
+                champBanner.textContent = `CHAMPION: #${championIdx + 1} ${state.teams[championIdx]}`;
                 champBanner.classList.add('done');
             } else {
                 champBanner.textContent = 'CHAMPION: TBD';
                 champBanner.classList.remove('done');
             }
 
-            document.getElementById('finalsSeedsBadge').textContent =
-                `Seed #1: ${seed1.name} vs Seed #2: ${seed2.name}`;
+            const f1Label = m1WinnerIdx !== null ? `#${m1WinnerIdx + 1} ${state.teams[m1WinnerIdx]}` : 'Winner of Match #1';
+            const f2Label = m2WinnerIdx !== null ? `#${m2WinnerIdx + 1} ${state.teams[m2WinnerIdx]}` : 'Winner of Match #2';
+            document.getElementById('finalsSeedsBadge').textContent = `Match #3: ${f1Label} vs ${f2Label}`;
 
-            renderStandings(ranked);
-            renderRoundRobinBracketTree(evaluatedRR, seed1, seed2, finalsEval);
-            renderRRMatches(evaluatedRR);
-            renderFinalsMatch(seed1, seed2, finalsEval);
+            renderStandings(stats);
+            renderSingleElimTree(evaluatedSemis, m1WinnerIdx, m2WinnerIdx, finalsPlayable, finalsEval);
+            renderSemiMatches(evaluatedSemis);
+            renderFinalsMatch(m1WinnerIdx, m2WinnerIdx, finalsPlayable, finalsEval);
 
-            return { ranked, evaluatedRR, seed1, seed2, finalsEval };
+            return { stats, evaluatedSemis, m1WinnerIdx, m2WinnerIdx, finalsPlayable, finalsEval, championIdx };
         }
 
         function renderTeamInputs() {
             const grid = document.getElementById('teamInputsGrid');
             grid.innerHTML = state.teams.map((name, idx) => `
                 <div class="team-item">
-                    <span class="seed-tag">TEAM ${idx + 1}</span>
+                    <span class="seed-tag">SEED #${idx + 1}</span>
                     <input type="text" value="${escapeHtml(name)}" placeholder="Team ${idx + 1}"
                         oninput="updateTeamName(${idx}, this.value)">
                 </div>
@@ -799,23 +778,22 @@
             recalculate();
         }
 
-        function renderStandings(ranked) {
+        function renderStandings(stats) {
             const tbody = document.getElementById('standingsBody');
-            tbody.innerHTML = ranked.map((st, rankIdx) => {
+            tbody.innerHTML = stats.map((st) => {
                 const netMaps = st.mapsW - st.mapsL;
                 const rd = st.roundsW - st.roundsL;
                 const kd = st.deaths > 0 ? (st.kills / st.deaths).toFixed(2) : st.kills.toFixed(2);
                 const avgAcs = st.playedMaps > 0 ? Math.round(st.acsSum / st.playedMaps) : 0;
-                const status = rankIdx < 2 ? 'FINALS (BO3)' : 'ELIMINATED';
 
                 return `
                     <tr>
-                        <td class="center bold">#${rankIdx + 1}</td>
+                        <td class="center bold">#${st.seed}</td>
                         <td class="bold">${escapeHtml(st.name)}</td>
+                        <td class="center bold">${st.status}</td>
                         <td class="center">${st.seriesW}–${st.seriesL}</td>
                         <td class="center">${st.mapsW}–${st.mapsL}</td>
                         <td class="center">${netMaps > 0 ? '+' + netMaps : netMaps}</td>
-                        <td class="center bold">${st.points}</td>
                         <td class="center">${st.roundsW}–${st.roundsL}</td>
                         <td class="center">${rd > 0 ? '+' + rd : rd}</td>
                         <td class="num">${st.kills}</td>
@@ -823,96 +801,116 @@
                         <td class="num">${st.assists}</td>
                         <td class="center">${kd}</td>
                         <td class="num bold">${avgAcs}</td>
-                        <td class="center bold">${status}</td>
                     </tr>
                 `;
             }).join('');
         }
 
         /**
-         * Renders the Round Robin Bracket Tree showing Round 1, Round 2, Round 3
-         * and the Grand Finals (Bo3) column fed by Seed #1 and Seed #2.
+         * Renders the 4-Team Single Elimination Bracket Tree:
+         * Round 1: Semifinals (Match #1: Team 1 vs Team 3 [1:00-3:00], Match #2: Team 2 vs Team 4 [3:00-5:00]) -> Round 2: Grand Finals (Match #3)
          */
-        function renderRoundRobinBracketTree(evaluatedRR, seed1, seed2, finalsEval) {
+        function renderSingleElimTree(evaluatedSemis, m1WinnerIdx, m2WinnerIdx, finalsPlayable, finalsEval) {
             const board = document.getElementById('roundRobinTree');
-            const rounds = [1, 2, 3];
 
-            const rrColsHtml = rounds.map(rNum => {
-                const matchesInRound = evaluatedRR.filter(m => m.round === rNum);
-                return `
-                    <div class="bracket-col">
-                        <div class="bracket-col-title">Round Robin — Round ${rNum} (Bo3)</div>
-                        <div class="bracket-col-matches">
-                            ${matchesInRound.map(m => {
-                                const t1Name = state.teams[m.t1Idx];
-                                const t2Name = state.teams[m.t2Idx];
-                                const w1 = m.ev.seriesWinner === '1';
-                                const w2 = m.ev.seriesWinner === '2';
-                                return `
-                                    <div class="b-match">
-                                        <div class="b-match-head">
-                                            <span>${m.code}</span>
-                                            <span>${m.ev.seriesWinner ? 'FINAL' : 'BO3'}</span>
-                                        </div>
-                                        <div class="b-slot ${w1 ? 'winner' : ''}">
-                                            <span class="b-name">${escapeHtml(t1Name)}</span>
-                                            <span class="b-score">${m.ev.t1Maps}</span>
-                                        </div>
-                                        <div class="b-slot ${w2 ? 'winner' : ''}">
-                                            <span class="b-name">${escapeHtml(t2Name)}</span>
-                                            <span class="b-score">${m.ev.t2Maps}</span>
-                                        </div>
+            const semiColHtml = `
+                <div class="bracket-col">
+                    <div class="bracket-col-title">Round 1: Semifinals (Bo3)</div>
+                    <div class="bracket-col-matches">
+                        ${evaluatedSemis.map(m => {
+                            const t1Name = `#${m.t1Idx + 1} ${state.teams[m.t1Idx]}`;
+                            const t2Name = `#${m.t2Idx + 1} ${state.teams[m.t2Idx]}`;
+                            const w1 = m.ev.seriesWinner === '1';
+                            const w2 = m.ev.seriesWinner === '2';
+                            return `
+                                <div class="b-match">
+                                    <div class="b-match-head">
+                                        <span>${m.code} (${m.time})</span>
+                                        <span>${m.ev.seriesWinner ? 'FINAL' : 'BO3'}</span>
                                     </div>
-                                `;
-                            }).join('')}
-                        </div>
+                                    <div class="b-slot ${w1 ? 'winner' : ''}">
+                                        <span class="b-name">${escapeHtml(t1Name)}</span>
+                                        <span class="b-score">${m.ev.t1Maps}</span>
+                                    </div>
+                                    <div class="b-slot ${w2 ? 'winner' : ''}">
+                                        <span class="b-name">${escapeHtml(t2Name)}</span>
+                                        <span class="b-score">${m.ev.t2Maps}</span>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
                     </div>
-                `;
-            }).join('');
+                </div>
+            `;
 
-            const fWin1 = finalsEval.seriesWinner === '1';
-            const fWin2 = finalsEval.seriesWinner === '2';
+            const fSlot1Name = m1WinnerIdx !== null ? `#${m1WinnerIdx + 1} ${state.teams[m1WinnerIdx]}` : 'Winner of Match #1';
+            const fSlot2Name = m2WinnerIdx !== null ? `#${m2WinnerIdx + 1} ${state.teams[m2WinnerIdx]}` : 'Winner of Match #2';
+            const fWin1 = finalsPlayable && finalsEval.seriesWinner === '1';
+            const fWin2 = finalsPlayable && finalsEval.seriesWinner === '2';
+
             const finalsColHtml = `
                 <div class="bracket-col finals-col">
-                    <div class="bracket-col-title">Grand Finals (Bo3)</div>
+                    <div class="bracket-col-title">Round 2: Grand Finals (Bo3)</div>
                     <div class="bracket-col-matches">
                         <div class="b-match">
                             <div class="b-match-head">
-                                <span>GF-M1 (TOP 2 SEEDS)</span>
+                                <span>MATCH #3 (FINALS)</span>
                                 <span>${finalsEval.seriesWinner ? 'CHAMPION' : 'BO3'}</span>
                             </div>
                             <div class="b-slot ${fWin1 ? 'winner' : ''}">
-                                <span class="b-name">#1 ${escapeHtml(seed1.name)}</span>
-                                <span class="b-score">${finalsEval.t1Maps}</span>
+                                <span class="b-name">${escapeHtml(fSlot1Name)}</span>
+                                <span class="b-score">${finalsPlayable ? finalsEval.t1Maps : '-'}</span>
                             </div>
                             <div class="b-slot ${fWin2 ? 'winner' : ''}">
-                                <span class="b-name">#2 ${escapeHtml(seed2.name)}</span>
-                                <span class="b-score">${finalsEval.t2Maps}</span>
+                                <span class="b-name">${escapeHtml(fSlot2Name)}</span>
+                                <span class="b-score">${finalsPlayable ? finalsEval.t2Maps : '-'}</span>
                             </div>
                         </div>
                     </div>
                 </div>
             `;
 
-            board.innerHTML = rrColsHtml + finalsColHtml;
+            board.innerHTML = semiColHtml + finalsColHtml;
         }
 
-        function renderRRMatches(evaluatedRR) {
+        function renderSemiMatches(evaluatedSemis) {
             const container = document.getElementById('rrMatchesContainer');
-            container.innerHTML = evaluatedRR.map(m => {
+            container.innerHTML = evaluatedSemis.map(m => {
                 const t1Name = state.teams[m.t1Idx];
                 const t2Name = state.teams[m.t2Idx];
-                return renderSeriesCard(m.id, `${m.code} (Round ${m.round}): ${t1Name} vs ${t2Name}`, t1Name, t2Name, m.ev);
+                return renderSeriesCard(
+                    m.id,
+                    `${m.code.toUpperCase()} [${m.time}] (${m.label.toUpperCase()}): #${m.t1Idx + 1} ${t1Name} vs #${m.t2Idx + 1} ${t2Name}`,
+                    t1Name,
+                    t2Name,
+                    m.ev
+                );
             }).join('');
         }
 
-        function renderFinalsMatch(seed1, seed2, finalsEval) {
+        function renderFinalsMatch(m1WinnerIdx, m2WinnerIdx, finalsPlayable, finalsEval) {
             const container = document.getElementById('finalsContainer');
+            if (!finalsPlayable) {
+                const f1 = m1WinnerIdx !== null ? `#${m1WinnerIdx + 1} ${state.teams[m1WinnerIdx]}` : 'Winner of Match #1';
+                const f2 = m2WinnerIdx !== null ? `#${m2WinnerIdx + 1} ${state.teams[m2WinnerIdx]}` : 'Winner of Match #2';
+                container.innerHTML = `
+                    <div class="series-card" style="opacity: 0.65;">
+                        <div class="series-top" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0;">
+                            <strong>MATCH #3 — GRAND FINALS (BO3): ${escapeHtml(f1)} vs ${escapeHtml(f2)}</strong>
+                            <span class="score-pill">Awaiting Semifinal Winners</span>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            const t1Name = state.teams[m1WinnerIdx];
+            const t2Name = state.teams[m2WinnerIdx];
             container.innerHTML = renderSeriesCard(
                 'FINALS',
-                `GRAND FINALS (BO3): #1 ${seed1.name} vs #2 ${seed2.name}`,
-                seed1.name,
-                seed2.name,
+                `MATCH #3 — GRAND FINALS (BO3): #${m1WinnerIdx + 1} ${t1Name} vs #${m2WinnerIdx + 1} ${t2Name}`,
+                t1Name,
+                t2Name,
                 finalsEval
             );
         }
@@ -922,6 +920,9 @@
             const statusText = isDone
                 ? `WINNER: ${ev.seriesWinner === '1' ? t1Name : t2Name} (${ev.t1Maps}–${ev.t2Maps})`
                 : `IN PROGRESS (${ev.t1Maps}–${ev.t2Maps})`;
+
+            const avgAcs1 = ev.playedMaps > 0 ? Math.round(ev.t1AcsSum / ev.playedMaps) : 0;
+            const avgAcs2 = ev.playedMaps > 0 ? Math.round(ev.t2AcsSum / ev.playedMaps) : 0;
 
             return `
                 <div class="series-card">
@@ -933,7 +934,7 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Map #</th>
+                                    <th>Map</th>
                                     <th>Map Pick</th>
                                     <th>Winner</th>
                                     <th class="num">${escapeHtml(t1Name)} Rnds</th>
@@ -954,16 +955,14 @@
                                         <td class="bold">Map ${gIdx + 1}</td>
                                         <td>
                                             <select onchange="updateMapField('${matchId}', ${gIdx}, 'map', this.value, true)">
-                                                ${VALORANT_MAPS.map(mp => `
-                                                    <option value="${mp}" ${g.map === mp ? 'selected' : ''}>${mp || '-- Select Map --'}</option>
-                                                `).join('')}
+                                                ${VALORANT_MAPS.map(m => `<option value="${m}" ${g.map === m ? 'selected' : ''}>${m || '-- Map --'}</option>`).join('')}
                                             </select>
                                         </td>
                                         <td>
                                             <select onchange="updateMapField('${matchId}', ${gIdx}, 'winnerOverride', this.value, true)">
-                                                <option value="" ${g.detectedWinner === '' ? 'selected' : ''}>Auto (13+ Rnds)</option>
-                                                <option value="1" ${g.detectedWinner === '1' ? 'selected' : ''}>${escapeHtml(t1Name)}</option>
-                                                <option value="2" ${g.detectedWinner === '2' ? 'selected' : ''}>${escapeHtml(t2Name)}</option>
+                                                <option value="" ${g.winnerOverride === '' ? 'selected' : ''}>Auto (${g.detectedWinner === '1' ? escapeHtml(t1Name) : (g.detectedWinner === '2' ? escapeHtml(t2Name) : 'TBD')})</option>
+                                                <option value="1" ${g.winnerOverride === '1' ? 'selected' : ''}>${escapeHtml(t1Name)}</option>
+                                                <option value="2" ${g.winnerOverride === '2' ? 'selected' : ''}>${escapeHtml(t2Name)}</option>
                                             </select>
                                         </td>
                                         <td><input type="number" inputmode="numeric" min="0" value="${g.t1Rounds}" oninput="updateMapField('${matchId}', ${gIdx}, 't1Rounds', this.value, false)" onchange="updateMapField('${matchId}', ${gIdx}, 't1Rounds', this.value, true)"></td>
@@ -979,14 +978,14 @@
                                     </tr>
                                 `).join('')}
                                 <tr style="background: var(--muted); font-weight: 700;">
-                                    <td colspan="3">SERIES TOTALS (${ev.t1Maps}–${ev.t2Maps})</td>
+                                    <td colspan="3">SERIES TOTALS</td>
                                     <td class="num">${ev.t1Rounds}</td>
                                     <td class="num">${ev.t2Rounds}</td>
-                                    <td class="num">${ev.playedMaps > 0 ? Math.round(ev.t1AcsSum / ev.playedMaps) : 0} avg</td>
+                                    <td class="num">${avgAcs1}</td>
                                     <td class="num">${ev.t1Kills}</td>
                                     <td class="num">${ev.t1Deaths}</td>
                                     <td class="num">${ev.t1Assists}</td>
-                                    <td class="num">${ev.playedMaps > 0 ? Math.round(ev.t2AcsSum / ev.playedMaps) : 0} avg</td>
+                                    <td class="num">${avgAcs2}</td>
                                     <td class="num">${ev.t2Kills}</td>
                                     <td class="num">${ev.t2Deaths}</td>
                                     <td class="num">${ev.t2Assists}</td>
@@ -999,14 +998,12 @@
         }
 
         function updateMapField(matchId, gIdx, field, value, shouldRender = true) {
-            if (!state.matches[matchId]) return;
-            const m = state.matches[matchId][gIdx];
-            if (!m) return;
-
+            if (!state.matches[matchId] || !state.matches[matchId][gIdx]) return;
+            const game = state.matches[matchId][gIdx];
             if (field === 'map' || field === 'winnerOverride') {
-                m[field] = value;
+                game[field] = value;
             } else {
-                m[field] = Math.max(0, parseInt(value, 10) || 0);
+                game[field] = Math.max(0, parseInt(value, 10) || 0);
             }
 
             if (shouldRender) {
@@ -1017,60 +1014,65 @@
         }
 
         function exportCSV() {
-            const { ranked, evaluatedRR, seed1, seed2, finalsEval } = recalculate();
+            const { stats, evaluatedSemis, m1WinnerIdx, m2WinnerIdx, finalsPlayable, finalsEval, championIdx } = recalculate();
             const rows = [];
             const esc = (val) => `"${String(val).replace(/"/g, '""')}"`;
 
-            rows.push(['VALORANT 4-TEAM TOURNAMENT REPORT (BO3 ROUND ROBIN + BO3 GRAND FINALS)']);
+            rows.push(['VALORANT 4-TEAM SINGLE ELIMINATION TOURNAMENT REPORT (BO3)']);
             rows.push(['Exported At', new Date().toLocaleString()]);
+            rows.push(['Champion', championIdx !== null ? `#${championIdx + 1} ${state.teams[championIdx]}` : 'TBD']);
             rows.push([]);
 
-            rows.push(['01. ROUND ROBIN STANDINGS']);
-            rows.push(['Rank', 'Team Name', 'Series W-L', 'Maps W-L', 'Net Maps', 'Points', 'Rounds W-L', 'Round Diff', 'Kills', 'Deaths', 'Assists', 'K/D', 'Avg ACS', 'Status']);
-            ranked.forEach((st, idx) => {
+            rows.push(['01. TOURNAMENT PERFORMANCE & SEED LEADERBOARD']);
+            rows.push(['Seed', 'Team Name', 'Status', 'Series W-L', 'Maps W-L', 'Net Maps', 'Rounds W-L', 'Round Diff', 'Kills', 'Deaths', 'Assists', 'K/D', 'Avg ACS']);
+            stats.forEach((st) => {
                 const kd = st.deaths > 0 ? (st.kills / st.deaths).toFixed(2) : st.kills.toFixed(2);
                 const avgAcs = st.playedMaps > 0 ? Math.round(st.acsSum / st.playedMaps) : 0;
                 rows.push([
-                    `#${idx + 1}`, st.name, `${st.seriesW}-${st.seriesL}`, `${st.mapsW}-${st.mapsL}`,
-                    st.mapsW - st.mapsL, st.points, `${st.roundsW}-${st.roundsL}`, st.roundsW - st.roundsL,
-                    st.kills, st.deaths, st.assists, kd, avgAcs, idx < 2 ? 'FINALS (BO3)' : 'ELIMINATED'
+                    `#${st.seed}`, st.name, st.status, `${st.seriesW}-${st.seriesL}`, `${st.mapsW}-${st.mapsL}`,
+                    st.mapsW - st.mapsL, `${st.roundsW}-${st.roundsL}`, st.roundsW - st.roundsL,
+                    st.kills, st.deaths, st.assists, kd, avgAcs
                 ].map(esc));
             });
             rows.push([]);
 
-            rows.push(['02. MATCH LOGS (ROUND ROBIN & GRAND FINALS)']);
+            rows.push(['02. MATCH LOGS (SEMIFINALS & GRAND FINALS)']);
             rows.push(['Stage', 'Match', 'Map #', 'Map Name', 'Team 1', 'Team 2', 'Winner', 'T1 Rounds', 'T2 Rounds', 'T1 ACS', 'T1 K', 'T1 D', 'T1 A', 'T2 ACS', 'T2 K', 'T2 D', 'T2 A']);
 
-            evaluatedRR.forEach(m => {
+            evaluatedSemis.forEach(m => {
                 const t1Name = state.teams[m.t1Idx];
                 const t2Name = state.teams[m.t2Idx];
                 m.ev.evaluatedMaps.forEach((g, idx) => {
                     if (!g.disabled && (g.detectedWinner || g.t1Rounds > 0 || g.t2Rounds > 0 || (g.t1Acs || 0) > 0 || (g.t2Acs || 0) > 0)) {
                         const winName = g.detectedWinner === '1' ? t1Name : (g.detectedWinner === '2' ? t2Name : 'TBD');
                         rows.push([
-                            `Round ${m.round}`, m.code, `Map ${idx + 1}`, g.map || 'Unset', t1Name, t2Name, winName,
+                            'Round 1 (Semifinals)', m.code, `Map ${idx + 1}`, g.map || 'Unset', t1Name, t2Name, winName,
                             g.t1Rounds, g.t2Rounds, g.t1Acs || 0, g.t1Kills, g.t1Deaths, g.t1Assists, g.t2Acs || 0, g.t2Kills, g.t2Deaths, g.t2Assists
                         ].map(esc));
                     }
                 });
             });
 
-            finalsEval.evaluatedMaps.forEach((g, idx) => {
-                if (!g.disabled && (g.detectedWinner || g.t1Rounds > 0 || g.t2Rounds > 0 || (g.t1Acs || 0) > 0 || (g.t2Acs || 0) > 0)) {
-                    const winName = g.detectedWinner === '1' ? seed1.name : (g.detectedWinner === '2' ? seed2.name : 'TBD');
-                    rows.push([
-                        'Grand Finals (Bo3)', 'GF-M1', `Map ${idx + 1}`, g.map || 'Unset', seed1.name, seed2.name, winName,
-                        g.t1Rounds, g.t2Rounds, g.t1Acs || 0, g.t1Kills, g.t1Deaths, g.t1Assists, g.t2Acs || 0, g.t2Kills, g.t2Deaths, g.t2Assists
-                    ].map(esc));
-                }
-            });
+            if (finalsPlayable) {
+                const f1Name = state.teams[m1WinnerIdx];
+                const f2Name = state.teams[m2WinnerIdx];
+                finalsEval.evaluatedMaps.forEach((g, idx) => {
+                    if (!g.disabled && (g.detectedWinner || g.t1Rounds > 0 || g.t2Rounds > 0 || (g.t1Acs || 0) > 0 || (g.t2Acs || 0) > 0)) {
+                        const winName = g.detectedWinner === '1' ? f1Name : (g.detectedWinner === '2' ? f2Name : 'TBD');
+                        rows.push([
+                            'Round 2 (Grand Finals)', 'Match #3', `Map ${idx + 1}`, g.map || 'Unset', f1Name, f2Name, winName,
+                            g.t1Rounds, g.t2Rounds, g.t1Acs || 0, g.t1Kills, g.t1Deaths, g.t1Assists, g.t2Acs || 0, g.t2Kills, g.t2Deaths, g.t2Assists
+                        ].map(esc));
+                    }
+                });
+            }
 
             const csvString = rows.map(r => r.join(',')).join('\n');
             const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `valorant_4team_bo3_${new Date().toISOString().slice(0, 10)}.csv`;
+            a.download = `valorant_4team_single_elim_${new Date().toISOString().slice(0, 10)}.csv`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -1079,40 +1081,23 @@
 
         function loadDemoData() {
             state = createDefaultState();
-            state.matches['RR_R1_M1'] = [
-                { map: 'Ascent', winnerOverride: '', t1Rounds: 13, t2Rounds: 9, t1Acs: 224, t1Kills: 84, t1Deaths: 68, t1Assists: 31, t2Acs: 189, t2Kills: 68, t2Deaths: 84, t2Assists: 24 },
-                { map: 'Bind', winnerOverride: '', t1Rounds: 13, t2Rounds: 11, t1Acs: 218, t1Kills: 89, t1Deaths: 82, t1Assists: 34, t2Acs: 201, t2Kills: 82, t2Deaths: 89, t2Assists: 29 },
+            // Match #1 (Semifinal 1): Seed #1 Sentinels vs Seed #4 Team Heretics (2-0)
+            state.matches['SEMI_M1'] = [
+                { map: 'Ascent', winnerOverride: '', t1Rounds: 13, t2Rounds: 8, t1Acs: 228, t1Kills: 84, t1Deaths: 65, t1Assists: 31, t2Acs: 186, t2Kills: 65, t2Deaths: 84, t2Assists: 22 },
+                { map: 'Bind', winnerOverride: '', t1Rounds: 13, t2Rounds: 10, t1Acs: 219, t1Kills: 87, t1Deaths: 78, t1Assists: 34, t2Acs: 198, t2Kills: 78, t2Deaths: 87, t2Assists: 27 },
                 createEmptyMap()
             ];
-            state.matches['RR_R1_M2'] = [
-                { map: 'Haven', winnerOverride: '', t1Rounds: 13, t2Rounds: 7, t1Acs: 231, t1Kills: 79, t1Deaths: 58, t1Assists: 28, t2Acs: 176, t2Kills: 58, t2Deaths: 79, t2Assists: 19 },
-                { map: 'Lotus', winnerOverride: '', t1Rounds: 10, t2Rounds: 13, t1Acs: 196, t1Kills: 81, t1Deaths: 87, t1Assists: 26, t2Acs: 215, t2Kills: 87, t2Deaths: 81, t2Assists: 33 },
-                { map: 'Split', winnerOverride: '', t1Rounds: 13, t2Rounds: 8, t1Acs: 226, t1Kills: 82, t1Deaths: 63, t1Assists: 30, t2Acs: 184, t2Kills: 63, t2Deaths: 82, t2Assists: 21 }
+            // Match #2 (Semifinal 2): Seed #2 Paper Rex vs Seed #3 Fnatic (2-1)
+            state.matches['SEMI_M2'] = [
+                { map: 'Haven', winnerOverride: '', t1Rounds: 13, t2Rounds: 9, t1Acs: 225, t1Kills: 85, t1Deaths: 71, t1Assists: 29, t2Acs: 194, t2Kills: 71, t2Deaths: 85, t2Assists: 25 },
+                { map: 'Lotus', winnerOverride: '', t1Rounds: 10, t2Rounds: 13, t1Acs: 196, t1Kills: 81, t1Deaths: 88, t1Assists: 26, t2Acs: 217, t2Kills: 88, t2Deaths: 81, t2Assists: 33 },
+                { map: 'Split', winnerOverride: '', t1Rounds: 13, t2Rounds: 11, t1Acs: 221, t1Kills: 90, t1Deaths: 84, t1Assists: 32, t2Acs: 204, t2Kills: 84, t2Deaths: 90, t2Assists: 28 }
             ];
-            state.matches['RR_R2_M1'] = [
-                { map: 'Sunset', winnerOverride: '', t1Rounds: 11, t2Rounds: 13, t1Acs: 204, t1Kills: 85, t1Deaths: 91, t1Assists: 27, t2Acs: 219, t2Kills: 91, t2Deaths: 85, t2Assists: 35 },
-                { map: 'Ascent', winnerOverride: '', t1Rounds: 13, t2Rounds: 10, t1Acs: 221, t1Kills: 86, t1Deaths: 76, t1Assists: 32, t2Acs: 193, t2Kills: 76, t2Deaths: 86, t2Assists: 25 },
-                { map: 'Icebox', winnerOverride: '', t1Rounds: 13, t2Rounds: 9, t1Acs: 223, t1Kills: 83, t1Deaths: 69, t1Assists: 29, t2Acs: 188, t2Kills: 69, t2Deaths: 83, t2Assists: 22 }
-            ];
-            state.matches['RR_R2_M2'] = [
-                { map: 'Bind', winnerOverride: '', t1Rounds: 13, t2Rounds: 6, t1Acs: 238, t1Kills: 76, t1Deaths: 51, t1Assists: 29, t2Acs: 169, t2Kills: 51, t2Deaths: 76, t2Assists: 17 },
-                { map: 'Haven', winnerOverride: '', t1Rounds: 13, t2Rounds: 8, t1Acs: 227, t1Kills: 80, t1Deaths: 62, t1Assists: 31, t2Acs: 181, t2Kills: 62, t2Deaths: 80, t2Assists: 20 },
-                createEmptyMap()
-            ];
-            state.matches['RR_R3_M1'] = [
-                { map: 'Lotus', winnerOverride: '', t1Rounds: 13, t2Rounds: 5, t1Acs: 244, t1Kills: 74, t1Deaths: 46, t1Assists: 27, t2Acs: 162, t2Kills: 46, t2Deaths: 74, t2Assists: 15 },
-                { map: 'Split', winnerOverride: '', t1Rounds: 13, t2Rounds: 7, t1Acs: 234, t1Kills: 78, t1Deaths: 55, t1Assists: 28, t2Acs: 174, t2Kills: 55, t2Deaths: 78, t2Assists: 18 },
-                createEmptyMap()
-            ];
-            state.matches['RR_R3_M2'] = [
-                { map: 'Abyss', winnerOverride: '', t1Rounds: 13, t2Rounds: 11, t1Acs: 217, t1Kills: 88, t1Deaths: 81, t1Assists: 32, t2Acs: 202, t2Kills: 81, t2Deaths: 88, t2Assists: 28 },
-                { map: 'Sunset', winnerOverride: '', t1Rounds: 9, t2Rounds: 13, t1Acs: 191, t1Kills: 77, t1Deaths: 84, t1Assists: 24, t2Acs: 216, t2Kills: 84, t2Deaths: 77, t2Assists: 31 },
-                { map: 'Ascent', winnerOverride: '', t1Rounds: 13, t2Rounds: 10, t1Acs: 220, t1Kills: 85, t1Deaths: 75, t1Assists: 30, t2Acs: 194, t2Kills: 75, t2Deaths: 85, t2Assists: 26 }
-            ];
+            // Match #3 (Grand Finals): #1 Sentinels vs #2 Paper Rex (2-1)
             state.matches['FINALS'] = [
-                { map: 'Ascent', winnerOverride: '', t1Rounds: 13, t2Rounds: 10, t1Acs: 222, t1Kills: 86, t1Deaths: 76, t1Assists: 31, t2Acs: 195, t2Kills: 76, t2Deaths: 86, t2Assists: 27 },
-                { map: 'Bind', winnerOverride: '', t1Rounds: 11, t2Rounds: 13, t1Acs: 203, t1Kills: 83, t1Deaths: 89, t1Assists: 28, t2Acs: 218, t2Kills: 89, t2Deaths: 83, t2Assists: 34 },
-                { map: 'Haven', winnerOverride: '', t1Rounds: 14, t2Rounds: 12, t1Acs: 229, t1Kills: 96, t1Deaths: 90, t1Assists: 36, t2Acs: 214, t2Kills: 90, t2Deaths: 96, t2Assists: 32 }
+                { map: 'Sunset', winnerOverride: '', t1Rounds: 13, t2Rounds: 10, t1Acs: 222, t1Kills: 86, t1Deaths: 76, t1Assists: 31, t2Acs: 195, t2Kills: 76, t2Deaths: 86, t2Assists: 27 },
+                { map: 'Icebox', winnerOverride: '', t1Rounds: 11, t2Rounds: 13, t1Acs: 203, t1Kills: 83, t1Deaths: 89, t1Assists: 28, t2Acs: 218, t2Kills: 89, t2Deaths: 83, t2Assists: 34 },
+                { map: 'Ascent', winnerOverride: '', t1Rounds: 14, t2Rounds: 12, t1Acs: 229, t1Kills: 96, t1Deaths: 90, t1Assists: 36, t2Acs: 214, t2Kills: 90, t2Deaths: 96, t2Assists: 32 }
             ];
 
             renderTeamInputs();
@@ -1122,7 +1107,8 @@
         function promptReset() {
             const overlay = document.getElementById('modalOverlay');
             document.getElementById('modalTitle').textContent = 'Confirm Reset';
-            document.getElementById('modalBody').textContent = 'Clear all Valorant match scores, map picks, and reset teams?';
+            document.getElementById('modalBody').textContent =
+                'Clear all Valorant match logs, reset all stats, and restore default team names?';
             document.getElementById('modalActions').innerHTML = `
                 <button onclick="closeModal()">Cancel</button>
                 <button class="primary" onclick="executeReset()">Reset All</button>
